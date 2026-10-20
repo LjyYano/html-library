@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>被1000多条评论质疑后，我把买车这笔账重算了一遍 — 转录展示</title>
+<script src="https://cdn.jsdelivr.net/npm/d3/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-lib/dist/browser/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-view/dist/browser/index.min.js"></script>
+<style>
+/* ================================================================
+   Design Tokens  (Podwise-inspired)
+   ================================================================ */
+:root{
+  --color-white:#ffffff;
+  --color-gray-50:#fafafa;
+  --color-gray-100:#f3f3f3;
+  --color-gray-150:#ebebeb;
+  --color-gray-200:#e5e5e5;
+  --color-gray-300:#cccccc;
+  --color-gray-400:#999999;
+  --color-gray-500:#777777;
+  --color-gray-600:#555555;
+  --color-gray-700:#333333;
+  --color-gray-900:#111111;
+
+  --color-primary-50:#f3effe;
+  --color-primary-100:#e4d9fd;
+  --color-primary-500:#7c5cfc;
+  --color-primary-600:#6340e8;
+
+  --color-sky-500:#0ea5e9;
+  --color-amber-500:#f59e0b;
+
+  --lavender-bg:#f0eeff;
+
+  /* light */
+  --bg:var(--lavender-bg);
+  --bg-card:var(--color-white);
+  --bg-sidebar:#f3f3f3;
+  --bg-surface:#fafafa;
+  --bg-hover:rgba(0,0,0,0.04);
+  --bg-press:rgba(0,0,0,0.08);
+  --bg-chip:#f3f3f3;
+
+  --border:#e8e8e8;
+  --border-subtle:#f0f0f0;
+
+  --fg1:#111111;
+  --fg2:#555555;
+  --fg3:#999999;
+
+  --accent:var(--color-primary-500);
+  --accent-hover:var(--color-primary-600);
+  --accent-subtle:var(--color-primary-50);
+
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md:0 2px 12px rgba(0,0,0,0.06);
+  --shadow-lg:0 8px 24px rgba(0,0,0,0.12);
+
+  /* type */
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","WenQuanYi Micro Hei",sans-serif;
+  --font-mono:"SF Mono",Menlo,Consolas,"Liberation Mono","Courier New",monospace;
+
+  --text-xs:11px;
+  --text-sm:13px;
+  --text-base:15px;
+  --text-lg:18px;
+  --text-xl:20px;
+  --text-2xl:24px;
+
+  /* spacing */
+  --space-1:4px;
+  --space-2:8px;
+  --space-3:12px;
+  --space-4:16px;
+  --space-5:20px;
+  --space-6:24px;
+  --space-8:32px;
+  --space-12:48px;
+
+  --radius-sm:6px;
+  --radius-md:8px;
+  --radius-lg:12px;
+  --radius-full:9999px;
+
+  --sidebar-width:220px;
+  --content-max:880px;
+
+  --ease-default:cubic-bezier(0.2,0,0,1);
+  --duration-base:150ms;
+}
+
+[data-theme="dark"]{
+  --bg:#0d0b14;
+  --bg-card:#1a1a1a;
+  --bg-sidebar:#141414;
+  --bg-surface:#1f1f1f;
+  --bg-hover:rgba(255,255,255,0.06);
+  --bg-press:rgba(255,255,255,0.10);
+  --bg-chip:#2a2a2a;
+
+  --border:#2a2a2a;
+  --border-subtle:rgba(255,255,255,0.06);
+
+  --fg1:#f0f0f0;
+  --fg2:#a0a0a0;
+  --fg3:#555555;
+
+  --accent-subtle:rgba(124,92,252,0.15);
+
+  --shadow-md:0 2px 12px rgba(0,0,0,0.4);
+  --shadow-lg:0 8px 24px rgba(0,0,0,0.5);
+}
+
+/* ================================================================
+   Reset
+   ================================================================ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--font-sans);
+  font-size:var(--text-base);
+  line-height:1.6;
+  color:var(--fg1);
+  background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  overflow:hidden;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+ul,ol{list-style:none}
+a{color:inherit;text-decoration:none}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(128,128,128,0.25);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(128,128,128,0.4)}
+
+/* ================================================================
+   App shell
+   ================================================================ */
+.app{
+  display:flex;
+  height:100vh;
+  background:var(--bg);
+  color:var(--fg1);
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar{
+  width:var(--sidebar-width);
+  flex-shrink:0;
+  height:100%;
+  background:var(--bg-sidebar);
+  border-right:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  padding:var(--space-3) var(--space-2);
+}
+.logo{
+  padding:6px 10px 16px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.logo-mark{
+  display:flex;
+  gap:2px;
+  align-items:flex-end;
+  height:18px;
+}
+.logo-mark span{
+  width:3px;
+  background:var(--accent);
+  border-radius:2px;
+}
+.logo-mark span:nth-child(1){height:8px}
+.logo-mark span:nth-child(2){height:13px}
+.logo-mark span:nth-child(3){height:16px}
+.logo-mark span:nth-child(4){height:10px}
+.logo-mark span:nth-child(5){height:6px}
+.logo-text{
+  font-size:14px;
+  font-weight:700;
+  color:var(--fg1);
+  letter-spacing:-0.02em;
+}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:9px 10px;
+  border-radius:7px;
+  font-size:13px;
+  font-weight:500;
+  color:var(--fg2);
+  transition:background var(--duration-base) var(--ease-default);
+  user-select:none;
+}
+.nav-item:hover{background:var(--bg-hover)}
+.nav-item.active{
+  background:var(--bg-press);
+  color:var(--fg1);
+  font-weight:600;
+}
+.sidebar-spacer{flex:1}
+.sidebar-bottom{display:flex;flex-direction:column;gap:2px;margin-bottom:4px}
+
+/* Mini-player */
+.mini-player{
+  border-top:1px solid var(--border);
+  padding-top:10px;
+  margin-top:4px;
+}
+.mini-player-inner{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:8px;
+  padding:0 2px;
+}
+.mini-cover{
+  width:32px;height:32px;border-radius:5px;flex-shrink:0;
+  background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:10px;font-weight:800;letter-spacing:0.5px;
+}
+.mini-info{flex:1;min-width:0}
+.mini-title{font-size:11px;font-weight:600;color:var(--fg1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-sub{font-size:10px;color:var(--fg3);margin-top:1px}
+.mini-play-btn{
+  width:26px;height:26px;border-radius:50%;background:var(--fg1);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.mini-play-btn svg{color:var(--bg-sidebar)}
+.progress-track{height:2px;background:var(--border);border-radius:2px;overflow:hidden;margin:0 2px}
+.progress-fill{height:100%;width:35%;background:var(--fg1);border-radius:2px}
+
+/* ---------- Episode header ---------- */
+.episode-header{
+  background:var(--bg-card);
+  border-bottom:1px solid var(--border);
+  padding:20px 28px 16px;
+}
+.episode-row{
+  display:flex;
+  gap:18px;
+  align-items:flex-start;
+  margin-bottom:4px;
+}
+.episode-cover{
+  width:120px;height:120px;border-radius:10px;overflow:hidden;flex-shrink:0;
+  background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);
+  box-shadow:0 2px 8px rgba(0,0,0,0.12);
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;
+  color:#fff;position:relative;
+}
+.episode-cover::before{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(circle at 30% 20%,rgba(255,255,255,0.25),transparent 60%);
+}
+.episode-cover .cover-zh{font-size:18px;font-weight:800;letter-spacing:2px;position:relative}
+.episode-cover .cover-en{font-size:8.5px;letter-spacing:1.5px;opacity:0.9;position:relative}
+.episode-meta{flex:1;min-width:0}
+.meta-line{
+  display:flex;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap;
+}
+.meta-chip{
+  display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--fg3);
+}
+.episode-title{
+  font-size:20px;font-weight:700;color:var(--fg1);line-height:1.35;letter-spacing:-0.01em;margin-bottom:10px;
+}
+.podcast-row{
+  display:flex;align-items:center;gap:6px;margin-bottom:12px;
+}
+.podcast-icon{
+  width:18px;height:18px;border-radius:3px;background:#555;color:#fff;font-size:9px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+.podcast-name{font-size:13px;color:var(--fg2);font-weight:500;cursor:pointer}
+.podcast-row svg{color:var(--fg3)}
+.prev-next{display:flex;gap:14px;margin-bottom:14px}
+.prev-next a{
+  display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--accent);cursor:pointer;
+}
+.prev-next a.disabled{color:var(--fg3);cursor:default}
+
+/* ---------- Main area ---------- */
+.main{
+  flex:1;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+}
+.content-card{
+  max-width:var(--content-max);
+  width:calc(100% - 40px);
+  margin:20px auto;
+  background:var(--bg-card);
+  border-radius:var(--radius-lg);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow-md);
+  overflow:hidden;
+  flex-shrink:0;
+}
+
+/* ---------- Tab bar ---------- */
+.tabbar{
+  background:var(--bg-card);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  padding-left:28px;
+  padding-right:16px;
+  position:sticky;
+  top:0;
+  z-index:5;
+}
+.tabs{
+  display:flex;
+  flex:1;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:11px 14px;
+  font-size:13px;
+  font-weight:500;
+  color:var(--fg3);
+  border-bottom:2px solid transparent;
+  margin-bottom:-1px;
+  white-space:nowrap;
+  transition:color var(--duration-base) var(--ease-default);
+}
+.tab:hover{color:var(--fg2)}
+.tab svg{opacity:0.7;flex-shrink:0}
+.tab.active{
+  color:var(--accent);
+  border-bottom-color:var(--accent);
+}
+.tab.active svg{opacity:1}
+.layout-toggle{
+  display:flex;
+  gap:2px;
+  margin-left:8px;
+  flex-shrink:0;
+}
+.layout-btn{
+  width:26px;
+  height:26px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:5px;
+  color:var(--fg3);
+}
+.layout-btn:hover{background:var(--bg-hover);color:var(--fg2)}
+.layout-btn.active{
+  background:var(--accent-subtle);
+  color:var(--accent);
+}
+
+/* ---------- Panel generic ---------- */
+.panel{display:none;padding:20px 28px 40px}
+.panel.active{display:block}
+.section-title{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:var(--fg3);
+  margin-bottom:12px;
+}
+.divider{
+  height:1px;
+  background:var(--border-subtle);
+  margin:20px 0;
+}
+
+/* ---------- Summary panel ---------- */
+.summary-body{
+  font-size:15px;
+  line-height:1.85;
+  color:var(--fg1);
+  margin-bottom:20px;
+}
+.takeaways-head{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin-bottom:14px;
+  color:var(--accent);
+}
+.takeaways-head .label{
+  font-size:14px;
+  font-weight:600;
+}
+.takeaways{display:flex;flex-direction:column;gap:10px}
+.takeaway{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+}
+.takeaway .bullet{
+  color:var(--fg3);
+  margin-top:4px;
+  flex-shrink:0;
+}
+.takeaway span.content{
+  font-size:14px;
+  line-height:1.8;
+  color:var(--fg2);
+}
+.outlines{display:flex;flex-direction:column;gap:2px}
+.outline{
+  display:flex;
+  gap:14px;
+  align-items:flex-start;
+  padding:9px 8px;
+  border-radius:7px;
+  transition:background var(--duration-base) var(--ease-default);
+}
+.outline:hover{background:var(--bg-hover)}
+.outline .ts{
+  font-family:var(--font-mono);
+  font-size:11px;
+  color:var(--accent);
+  flex-shrink:0;
+  padding-top:2px;
+  width:56px;
+}
+.outline .outline-text{
+  font-size:13px;
+  color:var(--fg1);
+  line-height:1.5;
+}
+
+/* ---------- Transcript panel ---------- */
+.search-bar{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 12px;
+  border-radius:var(--radius-md);
+  border:1px solid var(--border);
+  background:var(--bg-surface);
+  margin-bottom:18px;
+}
+.search-bar svg{color:var(--fg3);flex-shrink:0}
+.search-bar input{
+  flex:1;
+  border:none;
+  outline:none;
+  background:transparent;
+  font-family:inherit;
+  font-size:13px;
+  color:var(--fg1);
+}
+.search-bar input::placeholder{color:var(--fg3)}
+.turn{margin-bottom:12px}
+.turn-head{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:6px;
+}
+.turn-ts{
+  font-family:var(--font-mono);
+  font-size:11px;
+  color:var(--accent);
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+.turn-body{
+  font-size:14px;
+  line-height:1.85;
+  color:var(--fg2);
+  padding-left:10px;
+  border-left:2px solid transparent;
+  transition:color var(--duration-base) var(--ease-default),
+             border-color var(--duration-base) var(--ease-default);
+}
+.turn.active .turn-body{border-left-color:var(--accent)}
+.turn-divider{
+  height:1px;
+  background:var(--border-subtle);
+  margin-top:12px;
+}
+
+/* ---------- Highlights panel ---------- */
+.highlights{display:flex;flex-direction:column;gap:10px}
+.highlight{
+  background:var(--bg-surface);
+  border:1px solid var(--border-subtle);
+  border-radius:10px;
+  padding:16px 18px;
+  position:relative;
+  cursor:pointer;
+  transition:background var(--duration-base) var(--ease-default);
+}
+.highlight:hover{background:var(--bg-hover)}
+.highlight .quote-mark{
+  position:absolute;
+  bottom:10px;
+  right:14px;
+  font-size:44px;
+  color:var(--fg3);
+  opacity:0.25;
+  line-height:0.8;
+  font-family:Georgia,"Times New Roman",serif;
+  font-style:italic;
+  user-select:none;
+  pointer-events:none;
+}
+.highlight-text{
+  font-size:14px;
+  line-height:1.85;
+  color:var(--fg1);
+  padding-right:24px;
+  margin-bottom:12px;
+}
+.highlight-foot{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.highlight-ts{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  font-size:12px;
+  color:var(--accent);
+  font-family:var(--font-mono);
+}
+.highlight-actions{
+  display:flex;
+  gap:4px;
+  margin-left:auto;
+}
+.icon-btn{
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--fg3);
+  transition:all var(--duration-base) var(--ease-default);
+}
+.icon-btn:hover{background:var(--bg-hover);color:var(--fg2)}
+.icon-btn.saved{color:#ef4444}
+
+/* ---------- Keywords panel ---------- */
+.keywords{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+}
+.keyword{
+  padding:5px 14px;
+  border-radius:var(--radius-full);
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--fg1);
+  cursor:pointer;
+  transition:all var(--duration-base) var(--ease-default);
+}
+.keyword:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-subtle)}
+
+/* ---------- Mindmap panel ---------- */
+.mindmap-wrap{
+  background:linear-gradient(135deg,#f6f4ff 0%,#edeaff 100%);
+  border-radius:var(--radius-md);
+  padding:20px 0;
+  overflow:hidden;
+  height:680px;
+  position:relative;
+}
+[data-theme="dark"] .mindmap-wrap{
+  background:linear-gradient(135deg,#16131f 0%,#0f0d18 100%);
+}
+.mindmap-wrap .markmap{width:100%;height:100%}
+[data-theme="dark"] .mindmap-wrap .markmap{--markmap-text-color:#ffffff;--markmap-circle-open-bg:#666;--markmap-code-bg:#2a2a2a;--markmap-code-color:#ddd}
+
+/* ---------- Shownotes panel ---------- */
+.shownotes h2{
+  font-size:17px;
+  font-weight:700;
+  color:var(--fg1);
+  margin-bottom:10px;
+  line-height:1.4;
+}
+.shownotes p{
+  font-size:14px;
+  line-height:1.85;
+  color:var(--fg2);
+  margin-bottom:14px;
+}
+.shownotes ol,.shownotes ul{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  padding-left:16px;
+  list-style:disc;
+  margin-bottom:14px;
+}
+.shownotes li{
+  font-size:13px;
+  line-height:1.7;
+  color:var(--fg2);
+}
+.shownotes li::marker{color:var(--fg3)}
+.shownotes .meta-info{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  font-size:12px;
+  color:var(--fg3);
+  margin-bottom:16px;
+}
+.shownotes-grid{
+  display:grid;
+  grid-template-columns:120px 1fr;
+  gap:12px 16px;
+  font-size:13px;
+  margin-bottom:14px;
+}
+.shownotes-grid dt{color:var(--fg3);font-weight:500}
+.shownotes-grid dd{color:var(--fg2);line-height:1.7}
+.shownotes-grid dd a{color:var(--accent)}
+.shownotes-grid dd a:hover{text-decoration:underline}
+.personal-thoughts{
+  background:var(--accent-subtle);
+  border-radius:var(--radius-md);
+  padding:16px 20px;
+  margin-top:16px;
+}
+.personal-thoughts .section-title{color:var(--accent);margin-bottom:10px}
+.personal-thoughts ul{
+  padding-left:0;
+  list-style:none;
+  gap:8px;
+}
+.personal-thoughts li{
+  color:var(--fg1);
+  font-size:13px;
+  line-height:1.75;
+  padding-left:20px;
+  position:relative;
+}
+.personal-thoughts li::before{
+  content:"";
+  position:absolute;
+  left:0;top:7px;
+  width:12px;height:12px;
+  border:1.5px solid var(--accent);
+  border-radius:3px;
+}
+
+/* ---------- Detailed sections (used inside Shownotes deeper view) ---------- */
+.detail-section{margin-bottom:20px}
+.detail-section h3{
+  font-size:15px;
+  font-weight:700;
+  color:var(--fg1);
+  margin-bottom:8px;
+}
+.detail-section p{margin-bottom:10px}
+.tip-box{
+  background:var(--accent-subtle);
+  border-left:3px solid var(--accent);
+  border-radius:var(--radius-sm);
+  padding:12px 16px;
+  margin:10px 0;
+  font-size:13px;
+  line-height:1.75;
+  color:var(--fg1);
+}
+.tip-box strong{color:var(--accent)}
+
+/* ---------- Tweaks panel ---------- */
+.tweaks{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:16px 18px;
+  width:220px;
+  box-shadow:var(--shadow-lg);
+  z-index:999;
+  font-size:13px;
+}
+.tweaks-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  font-weight:700;
+  margin-bottom:14px;
+  color:var(--fg1);
+}
+.tweaks-head button{color:var(--fg3)}
+.tweaks-group{margin-bottom:14px}
+.tweaks-group:last-child{margin-bottom:0}
+.tweaks-label{
+  font-size:10px;
+  font-weight:700;
+  color:var(--fg3);
+  margin-bottom:6px;
+  text-transform:uppercase;
+  letter-spacing:0.07em;
+}
+.tweaks-row{display:flex;gap:6px}
+.tweaks-btn{
+  flex:1;
+  padding:6px 0;
+  border-radius:6px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--fg2);
+  font-size:12px;
+  font-weight:500;
+  text-transform:capitalize;
+}
+.tweaks-btn.on{
+  border-color:var(--accent);
+  background:var(--accent-subtle);
+  color:var(--accent);
+}
+.tweaks-trigger{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  width:44px;height:44px;
+  border-radius:50%;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow-lg);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--fg2);
+  z-index:998;
+}
+.tweaks-trigger:hover{color:var(--accent)}
+
+/* ---------- Responsive ---------- */
+@media (max-width:860px){
+  .sidebar{display:none}
+  .content-card{width:calc(100% - 24px);margin:12px auto}
+  .episode-header{padding:16px 18px 12px}
+  .episode-row{gap:12px}
+  .episode-cover{width:88px;height:88px}
+  .episode-cover .cover-zh{font-size:14px;letter-spacing:1px}
+  .episode-cover .cover-en{font-size:6.5px;letter-spacing:1px}
+  .episode-title{font-size:17px}
+  .tabbar{padding-left:14px;padding-right:8px}
+  .panel{padding:16px 18px 32px}
+}
+</style>
+</head>
+<body data-theme="light">
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark"><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="logo-text">转录展示</div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item" data-nav="home"><span>Home</span></div>
+      <div class="nav-item" data-nav="ask"><span>Ask AI</span></div>
+      <div class="nav-item active" data-nav="library"><span>Library</span></div>
+    </nav>
+    <div class="sidebar-spacer"></div>
+    <div class="sidebar-bottom">
+      <div class="nav-item" id="theme-toggle"><span>Toggle theme</span></div>
+      <div class="nav-item"><span>You</span></div>
+    </div>
+    <div class="mini-player">
+      <div class="mini-player-inner">
+        <div class="mini-cover">百万</div>
+        <div class="mini-info">
+          <div class="mini-title">被1000多条评论质疑后，我把买车这笔账重算了一遍</div>
+          <div class="mini-sub">百万红利自由计划</div>
+        </div>
+        <button class="mini-play-btn" id="mini-play">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </button>
+      </div>
+      <div class="progress-track"><div class="progress-fill"></div></div>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main">
+    <div class="content-card">
+
+      <!-- Episode header -->
+      <header class="episode-header">
+        <div class="episode-row">
+          <div class="episode-cover">
+            <div class="cover-zh">百万</div>
+            <div class="cover-en"></div>
+          </div>
+          <div class="episode-meta">
+            <div class="meta-line">
+              <span class="meta-chip">14 Oct 2026</span>
+              <span class="meta-chip">9m9s</span>
+              <span class="meta-chip">Bilibili</span>
+            </div>
+            <h1 class="episode-title">被1000多条评论质疑后，我把买车这笔账重算了一遍</h1>
+            <div class="podcast-row">
+              <div class="podcast-icon">百</div>
+              <span class="podcast-name">百万红利自由计划</span>
+            </div>
+            <div class="prev-next">
+              <a class="disabled">Prev</a>
+              <a>Next</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Tab bar -->
+      <div class="tabbar">
+        <div class="tabs" id="tabs">
+          <button class="tab active" data-tab="summary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            Summary
+          </button>
+          <button class="tab" data-tab="mindmap">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><line x1="12" y1="9" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="15"/><line x1="9" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="15" y2="12"/></svg>
+            Mindmap
+          </button>
+          <button class="tab" data-tab="transcript">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Transcript
+          </button>
+          <button class="tab" data-tab="keywords">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Keywords
+          </button>
+          <button class="tab" data-tab="highlights">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Highlights
+          </button>
+          <button class="tab" data-tab="shownotes">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Shownotes
+          </button>
+        </div>
+        <div class="layout-toggle">
+          <button class="layout-btn active">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
+          </button>
+          <button class="layout-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg>
+          </button>
+          <button class="layout-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ================ Panels ================ -->
+      <!-- Summary -->
+      <section class="panel active" data-panel="summary">
+        <p class="summary-body">这期是评论区答辩式的重算视频。五个质疑中两个认账修正：养车费按城市和车型拆成三档（小城电车/二线电车/一线油车），推迟年数修正为 7.6、8.6、11.5 年；换车金拿去投资可以让「晚自由」缩短半年到一年。三个结论重算后更硬：3% 的实际收益率不是保守而是做计划该用的数（任意时点买入，沪深300 有 31% 的十年段实际年化不足 3%）；上班能否自由只看储蓄率能否过三成，买车动的恰恰是储蓄率；车越贵，丢掉的越是你最健康的那几年——47 岁自由还有 21 年健康时间，56 岁只剩 12 年。最终结论：小城市电车约晚 7 年、二线约 8 年、一线油车接近 11 年；车可以买，但别只问买不买得起，要问愿意为它多上几年班。</p>
+
+        <div class="takeaways-head">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span class="label">Takeaways</span>
+        </div>
+        <ul class="takeaways">
+          <li class="takeaway"><span class="bullet">•</span><span class="content">五个质疑两个改、三个不改：被说服就修数字，说服不了就给证据</span></li>
+<li class="takeaway"><span class="bullet">•</span><span class="content">养车费按城市车型差三倍：小城电车不到1万/年，一线油车2.8万/年</span></li>
+<li class="takeaway"><span class="bullet">•</span><span class="content">即使养车一分钱不花，买车+十年一换也已推迟自由5.7年——车价才是大头</span></li>
+<li class="takeaway"><span class="bullet">•</span><span class="content">3%实际收益率不保守：任意月买入，沪深300有31%的十年段年化不足3%</span></li>
+<li class="takeaway"><span class="bullet">•</span><span class="content">财务自由＝年开支÷提取率；3.5%是提取率，不是收益率</span></li>
+<li class="takeaway"><span class="bullet">•</span><span class="content">上班能否自由只看储蓄率：存10%要73年，存一半21年，存六成15年</span></li>
+<li class="takeaway"><span class="bullet">•</span><span class="content">关键不是买不买，而是买什么档次：4万二手车晚4.7年，30万晚13.1年</span></li>
+        </ul>
+
+        <div class="divider"></div>
+
+        <div class="section-title">Outlines</div>
+        <div class="outlines" id="outlines"></div>
+      </section>
+
+      <!-- Mindmap -->
+      <section class="panel" data-panel="mindmap">
+        <div class="mindmap-wrap">
+          <svg class="markmap" id="markmap-svg"></svg>
+        </div>
+      </section>
+
+      <!-- Transcript -->
+      <section class="panel" data-panel="transcript">
+        <div class="search-bar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input id="transcript-search" placeholder="Search transcript…" />
+        </div>
+        <div id="transcript-list"></div>
+      </section>
+
+      <!-- Keywords -->
+      <section class="panel" data-panel="keywords">
+        <div class="section-title" style="margin-bottom:16px">Keywords mentioned in this episode</div>
+        <div class="keywords" id="keywords-list"></div>
+      </section>
+
+      <!-- Highlights -->
+      <section class="panel" data-panel="highlights">
+        <div class="section-title" style="margin-bottom:16px">7 highlights · tap to save</div>
+        <div class="highlights" id="highlights-list"></div>
+      </section>
+
+      <!-- Shownotes -->
+      <section class="panel" data-panel="shownotes">
+        <div class="shownotes">
+          <div class="meta-info"><span>百万红利自由计划</span><span>·</span><span>2026-10-14</span><span>·</span><span>9:09</span><span>·</span><a href="https://www.bilibili.com/video/BV1iAp167E6W/" target="_blank" style="color:var(--accent)">原始链接</a></div>
+<h2>被1000多条评论质疑后，我把买车这笔账重算了一遍</h2>
+<p>上期「买20万的车让财务自由推迟多久」引来1000多条质疑。UP主挑出吵得最凶的五个问题，用同一套账重算：两个认错修正，三个结论不变甚至更硬。</p>
+<dl class="shownotes-grid">
+<dt>频道</dt><dd>百万红利自由计划</dd>
+<dt>发布</dt><dd>2026-10-14</dd>
+<dt>时长</dt><dd>9:09</dd>
+<dt>平台</dt><dd>Bilibili</dd>
+<dt>标签</dt><dd>财务自由 / 买车 / 储蓄率 / FIRE</dd>
+</dl>
+<div class="detail-section"><h3>养车费：吵错了地方</h3><p>养车预算城市间差三倍：小城电车家充不到1万/年，二线电车靠公共桩约1.6万，一线油车光停车就近1万、全年2.8万。扣掉不开车也要花的公交打车钱，真实增量是6600、1万、1.9万——对应晚自由7.6、8.6、11.5年，原版9.2年居中。更关键的是：就算养车一分钱不花，买车+每十年一换也已推迟5.7年，车价和换车频率才是大头。电车贬值快，十年只卖2万的话再多0.6年（共9.8年）。</p></div>
+<div class="detail-section"><h3>收益率3%：不是保守，是计划用的数</h3><p>实际收益率＝账面收益减通胀。中证红利全收益2004年底至2026年10月扣通胀年化9.9%，沪深300全收益6.8%——但那是从最低点一口气算到底。换任意月份买入、持有十年、扣0.6%费用：沪深300有31%的时间段实际年化不足3%，最差年亏5%；红利也有16%的时段低于3%；2007.10–2008.11两个指数都跌七成多；纳斯达克2000年高点等了15年才回本。收益率越高推迟越少但不消失：6%→晚6.3年，10%→4.6年，零收益→18.3年。拿某一年25%的收益规划几十年才是冒险。</p></div>
+<div class="detail-section"><h3>上班能自由吗：只看储蓄率</h3><p>财务自由＝年开支÷提取率。3.5%是提取率（每年只拿出3.5%花），不是收益率——很多人搞混。按30年90%不花光的研究，第一年最多取3.9%，越早退休压得越低。换算：月花3000要103万、月花1万要343万、月花2万要686万；喊5000万的人等于月花14万，说100万够的人月花只有2900。从零开始、工资不涨，决定年数的唯一变量是储蓄率：10%要73年，20%要50年，50%要21年，60%要15年（钱胡子先生夫妻存下一大半收入，30岁退休）。年存6万的家庭买车后只剩3.2万，储蓄率腰斩。</p></div>
+<div class="detail-section"><h3>换车金：这条认账</h3><p>原视频为保守让换车金只跟上物价。修正：换车金也按3%投资→推迟从9.2降到8.6年；干脆全放一个池子十年一取→8.2年。顺带算了36期免息：钱留账户三年多赚约9000块，只提前0.1年，且金融服务费会把这点好处吃光。算法优化加起来约一年，改不了大方向。</p></div>
+<div class="detail-section"><h3>健康代价：贵的不是车，是最健康的那几年</h3><p>世卫估算中国人健康预期寿命约68岁。30岁开始不买车47岁自由→21年健康自由时间；长期开20万档56岁才自由→只剩12年。差的9年恰是身体最好的9年。档次决定代价：4万二手车晚4.7年、10万新车晚5.1年、20万晚8.6年、30万晚13.1年——从10万升到20万，多付的3.5年就是升级的真实价格。打车对比：一线养20万油车全成本约5万/年，打车3元/公里要一年打16700公里（日均46公里）才打平；日常出行二三十公里内，大城市打车更便宜。车能帮你赚钱（如跑业务）则先抵扣成本再算。</p></div>
+<div class="personal-thoughts"><div class="section-title">个人思考</div><ul>
+<li>算一下自己的储蓄率和「自由门槛」（年开支÷3.5%），更新到个人记账本</li>
+<li>下次想升级大件消费时，先换算成「多上几年班」再决定</li>
+<li>延伸：钱胡子先生（Mr. Money Mustache）的储蓄率-退休年数表</li>
+</ul></div>
+        </div>
+      </section>
+    </div>
+
+    <div style="height:20px"></div>
+  </main>
+</div>
+
+<!-- Tweaks trigger -->
+<button class="tweaks-trigger" id="tweaks-trigger" title="Open tweaks">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9 1.65 1.65 0 0 0 4.27 7.18l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+</button>
+
+<!-- Tweaks panel -->
+<div class="tweaks" id="tweaks" style="display:none">
+  <div class="tweaks-head">
+    <span>Tweaks</span>
+    <button id="tweaks-close">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="tweaks-group">
+    <div class="tweaks-label">Theme</div>
+    <div class="tweaks-row">
+      <button class="tweaks-btn on" data-theme-choice="light">light</button>
+      <button class="tweaks-btn" data-theme-choice="dark">dark</button>
+    </div>
+  </div>
+  <div class="tweaks-group">
+    <div class="tweaks-label">Background</div>
+    <div class="tweaks-row">
+      <button class="tweaks-btn on" data-bg-choice="lavender">lavender</button>
+      <button class="tweaks-btn" data-bg-choice="neutral">neutral</button>
+      <button class="tweaks-btn" data-bg-choice="white">white</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   Data
+   ============================================================ */
+const OUTLINES = [{"ts": "00:00", "text": "回顾与重算声明"}, {"ts": "01:14", "text": "问题1：养车费"}, {"ts": "02:27", "text": "问题2：3%收益率"}, {"ts": "03:37", "text": "问题3：上班能自由吗"}, {"ts": "04:51", "text": "问题4：换车金投资"}, {"ts": "05:58", "text": "问题5：老了才自由"}, {"ts": "07:15", "text": "买什么档次 + 打车对比"}, {"ts": "08:28", "text": "修正后的总结"}];
+
+const TURNS = [{"ts": "00:00", "text": "上期那个视频「买一辆20万的车会让财务自由推迟多久」，22万人看完，评论区和弹幕炒成了一锅粥。有人说我养车费算多了，有人说3%的收益太保守，还有人说等你老了才自由有什么用。这些质疑我一条一条看完了，挑出炒得最凶的五个问题，用同一套账全部重新算了一遍。先把结果放这儿：五个问题里有两个确实说到了点子上，数字我改；另外三个算完以后结论不变，甚至更硬了。先花半分钟回顾一下那套账：一个家庭手里已经有50万可以投资的钱，一年花12万还能存下12万，不买车大概17年能自由；买一辆20万的车而且一直保持这个档次、每十年换一辆，就要26.2年，整整晚了9.2年。这里说的自由，意思是不靠上班的工资，光靠这笔资产也能一直撑住生活开支。"}, {"ts": "01:14", "text": "第一个问题，弹幕里炒得最多：原视频及养车的预算是一年24000——能源9000、保险5000、停车6000、保养维修4000。很多人不服：有人说电车一年电费也就3000，也有人说一线城市停车一个月500太正常了。其实两边都没说错，因为城市和车型差得太多了。所以我拆成三种情况分别重算：小城市开电车家里能充电，一年下来不到1万；二线城市开电车靠公共充电桩，一年大概16000；一线城市开油车，光停车费就快1万，一年要28000。再减掉不开车本来也要花的公交和打车钱，真正多出来的部分分别是6600、1万和19000。带进同一套账，三种情况分别晚自由7.6年、8.6年、11.5年，原视频的9.2年刚好落在中间。但我还算出了一个更关键的东西：就算养车一分钱不花，光是买车加上每十年换一次车，就已经推迟了5.7年——也就是说这9.2年里，日常养车只占三年半，大头在车价本身，吵养车费其实是吵错了地方。还有一条弹幕说得很实在：车开十年能剩原价一成就不错了。原视频是按十年后卖4万算的，还剩两成；电车贬值普遍比油车快，如果十年后只能卖2万，每年就得多存2000块换车钱，推迟时间再多0.6年，从9.2年变成9.8年。我的判断是：养车费算高了这一条，对小城市的电车车主成立，可以修正到七年半左右；但真正决定你晚几年的，是你选多贵的车、多久换一次。"}, {"ts": "02:27", "text": "第二个问题是收益率。原视频假设扣掉通胀以后每年赚3%。先说一下什么叫扣掉通胀：比如你账面上赚了5%，可物价也涨了2%，那你实际变负的只有3%左右，这个就叫实际收益率。这个3%两派炒得很凶：一派说太保守了，弹幕里就有人说我纳指今年赚了25个点；另一派说太乐观，现在投什么不亏。我直接拉了真实数据：中证红利全收益指数，就是把分红全部再买回去的那个版本，从2004年底到今年10月9号，扣掉通胀年化9.9%；沪深300全收益是6.8%。这么看3%好像太保守了，但这是从一个很低的起点一口气算到底的结果。所以我又算了另一种：任意一个月买进去，拿满十年，再扣掉每年0.6%的基金费用。结果是沪深300有31%的时间段十年下来实际年化不到3%，最差的一段每年亏5%；红利指数也有16%的时间段低于3%。还有大跌：2007年10月到2008年11月，这两个指数都跌了七成多；纳斯达克更狠，2000年的高点一直到2015年才涨回来，整整等了15年。再看今天，中证红利过去一年的股息率大约是4.3%，有分红打底，扣掉通胀以后3%到4%是一个站得住的计划。而且你会发现，收益率越高，买车推迟的年数确实会变少，但永远不会消失：按6%算还要晚6.3年，就算按10%算也要晚4.6年；反过来收益越低车就越贵，要是一分钱实际收益都没有，得晚18.3年。所以我的判断是：3%不是悲观，是做计划就该用的数；拿某一年25%的收益去规划后面几十年，那才是真正的冒险。"}, {"ts": "03:37", "text": "第三个问题，评论区点赞最高的一条，话说得特别直接：「上班还想财富自由？别想了。」弹幕里有人说至少得5000万，也有人说100万就够了。先说清楚，财务自由不是一个固定数字，它等于你一年的开支除以提取率。提取率就是每年从这笔钱里拿出多少比例来花，很多人把它和收益率搞混了：我用的3.5%，意思是每年只拿3.5%出来花，不是说每年要赚3.5%。那为什么是3.5%？2025年的研究说，想在30年里有九成把握不把钱花光，第一年最多只能拿3.9%；越早退休，钱要撑得越久，所以我再往下压了一点。这么一换算就清楚了：一个月花3000要103万，花5000要171万，花1万要343万，花2万要686万。说要5000万的那位，等于一个月要花14万多；说100万够的，一个月只能花2900——两边都没错，只是活法不一样。那上班到底能不能自由？我又算了一张表：从零开始、工资不涨，决定你多少年能自由的只有一个东西——储蓄率，也就是收入里存下来的比例。存10%要73年，这辈子基本没戏；存20%要50年，跟正常退休差不多；存一半21年，存六成15年。美国有个很出名的真实例子叫钱胡子先生，夫妻俩把一大半收入都存了下来，30岁就不用上班了。我的判断是：上班能不能自由，不看工资多高，看储蓄率能不能过三成。而买车动的恰恰就是储蓄率——原视频里一年存6万的家庭，买了车只剩32000，储蓄率几乎腰斩。"}, {"ts": "04:51", "text": "第四个问题是个很专业的挑刺：有人问，每年存16000换车，为什么不让它也去投资？十年以后直接从总资产里拿16万不就行了？这一条我认。原视频为了保守，让这笔钱只跟上物价不赚钱。我按两种改法重算了：换车的钱也按3%去投资，推迟时间从9.2年降到8.6年；干脆全放在一个池子里、十年取一次，降到8.2年。顺手把另一个高频问题也算了：没有免息我就不买？做36期免息，钱先留在账户里继续赚，三年下来大概能多赚9000块，换车时间只提前了0.1年——而且很多免息会另收一笔金融服务费，这点好处基本就被吃光了。我的判断是：换车金这条批评是对的，修正以后少晚半年到一年；但这些算法上的优化加在一起也就一年左右，改变不了大方向。"}, {"ts": "05:58", "text": "最后一个问题火药味最重：有人说，你在最健康最有精力的时候拼命存钱，等老了一身病，自由了又有什么用？这句话我非常认同，所以才更要把账算清楚。假设你30岁开始不买车，47岁自由；长期开20万档的车，要到56岁。世卫组织估算中国人的健康预期寿命大约是68岁，也就是说身体还利索、不太需要别人照顾的日子大概到68岁。47岁自由，你还有21年健康的自由时间；56岁才自由，只剩12年——差掉的那九年，恰恰是你身体还不错的那九年。"}, {"ts": "07:15", "text": "所以这道题的关键不是买不买，而是买什么档次。我按二线城市开电车的成本算了四种选择：4万的二手车晚4.7年，10万的新车晚5.1年，20万晚8.6年，30万晚13.1年。从10万升级到20万，多出来的这3.5年，就是这份升级真正的价格。当然，如果车能帮你多赚钱，比如跑业务，那就先把多赚的钱抵掉成本再来算。还有人说大城市根本不用买车、打车多方便，这个我也算了：在一线城市养一辆20万的油车，养车费、换车钱，再加上这20万放着少赚的钱，一年的全部成本大约是5万。按打车一公里三块钱算，一年要打16700公里才抵得上养车的钱，平均下来一天46公里。所以如果你平时出行一天大多在二三十公里以内，那在大城市打车就是比养车便宜。我的判断是：真有刚需就买，优先选十万档，代价大概是五年；想要更好的体验也可以，但你要清楚，你是在拿50岁出头最健康的那几年去换这份体验。"}, {"ts": "08:28", "text": "最后把五个问题的结果放在一张表里。第一，养车费城市差别很大：小城电车修正到7.6年，一线城市开油车反而要11.5年。第二，3%的实际收益不是保守，是做计划该用的数。第三，自由的门槛等于开支除以3.5%，上班能不能自由看储蓄率。第四，换车金拿去投资少晚半年到一年，这条我修正。第五，车越贵，你丢掉的是越健康的那几年。所以修正以后的结论是：长期维持20万档的车，小城市电车大约晚七年，二线城市电车大约晚八年，一线城市开油车接近11年。车可以买，但买之前别只问自己买不买得起，还要问问自己愿意为它多上几年班。我们下期见。"}];
+
+const HIGHLIGHTS = [{"ts": "00:23", "text": "五个问题里有两个确实说到了点子上，数字我改；另外三个算完以后，结论不变，甚至更硬了。"}, {"ts": "01:42", "text": "就算养车一分钱不花，光是买车加上每十年换一次车，就已经推迟了5.7年——吵养车费其实是吵错了地方。"}, {"ts": "03:46", "text": "收益率越高，买车推迟的年数确实会变少，但永远不会消失。"}, {"ts": "04:07", "text": "拿某一年25%的收益去规划后面几十年，那才是真正的冒险。"}, {"ts": "04:22", "text": "财务自由不是一个固定数字，它等于你一年的开支除以提取率。"}, {"ts": "05:36", "text": "上班能不能自由，不看工资多高，看储蓄率能不能过三成。"}, {"ts": "08:55", "text": "买之前别只问自己买不买得起，还要问问自己愿意为它多上几年班。"}];
+
+const KEYWORDS = ["财务自由", "买车", "储蓄率", "FIRE", "养车成本", "实际收益率", "中证红利", "提取率", "健康预期寿命", "换车周期", "二手车", "打车", "免息", "钱胡子先生", "沪深300", "推迟年数"];
+
+const MINDMAP_MD = `# 重算买车账：五个质疑，两个改三个更硬
+## 原账回顾
+### 50万本金、年存12万
+### 不买车17年自由
+### 20万车十年一换晚9.2年
+## 问题1 养车费·修正
+### 三档重算：7.6 / 8.6 / 11.5年
+### 零养车也推迟5.7年
+### 电车贬值快再多0.6年
+## 问题2 收益率3%·不改
+### 实际收益率＝扣掉通胀
+### 31%时段十年年化不足3%
+### 纳指2000年套15年
+### 6%晚6.3年、10%晚4.6年
+## 问题3 储蓄率·不改
+### 自由＝开支÷提取率
+### 3.5%是提取率非收益率
+### 储蓄率定生死
+#### 存10%要73年、存六成15年
+### 买车腰斩储蓄率
+## 问题4 换车金·修正
+### 换车金按3%投资→8.6年
+### 全放一个池子→8.2年
+### 36期免息只提前0.1年
+## 问题5 健康代价·不改
+### 健康预期寿命约68岁
+### 47岁自由21年 vs 56岁12年
+### 档次决定代价
+#### 4万二手车晚4.7年
+#### 10万晚5.1年、20万晚8.6年
+#### 30万晚13.1年
+### 打车vs养车：一天46公里打平
+## 修正后的结论
+### 小城7年 / 二线8年 / 一线11年
+### 愿意为车多上几年班？`;
+
+/* ============================================================
+   Render: Outlines
+   ============================================================ */
+const outlinesEl = document.getElementById('outlines');
+outlinesEl.innerHTML = OUTLINES.map(o =>
+  `<div class="outline">
+     <span class="ts">${o.ts}</span>
+     <span class="outline-text">${o.text}</span>
+   </div>`
+).join('');
+
+/* ============================================================
+   Render: Transcript
+   ============================================================ */
+const transcriptEl = document.getElementById('transcript-list');
+function renderTranscript(filter){
+  const kw = (filter||'').trim().toLowerCase();
+  transcriptEl.innerHTML = TURNS.map((t, i) => {
+    const matched = !kw || t.text.toLowerCase().includes(kw) || t.ts.includes(kw);
+    if(!matched) return '';
+    const text = kw
+      ? t.text.replace(new RegExp(kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),
+          m => `<mark style="background:rgba(124,92,252,0.25);color:var(--fg1);padding:0 2px;border-radius:3px">${m}</mark>`)
+      : t.text;
+    return `
+      <div class="turn" data-i="${i}">
+        <div class="turn-head">
+          <span class="turn-ts">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            ${t.ts}
+          </span>
+        </div>
+        <div class="turn-body">${text}</div>
+        ${i < TURNS.length-1 ? '<div class="turn-divider"></div>' : ''}
+      </div>
+    `;
+  }).join('');
+
+  transcriptEl.querySelectorAll('.turn').forEach(el => {
+    el.addEventListener('click', () => {
+      const wasActive = el.classList.contains('active');
+      transcriptEl.querySelectorAll('.turn.active').forEach(e => e.classList.remove('active'));
+      if(!wasActive) el.classList.add('active');
+    });
+  });
+}
+renderTranscript('');
+
+document.getElementById('transcript-search').addEventListener('input', (e) => {
+  renderTranscript(e.target.value);
+});
+
+/* ============================================================
+   Render: Highlights
+   ============================================================ */
+const highlightsEl = document.getElementById('highlights-list');
+highlightsEl.innerHTML = HIGHLIGHTS.map((h, i) => `
+  <div class="highlight" data-i="${i}">
+    <span class="quote-mark">&ldquo;</span>
+    <p class="highlight-text">${h.text}</p>
+    <div class="highlight-foot">
+      <span class="highlight-ts">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        ${h.ts}
+      </span>
+      <div class="highlight-actions">
+        <button class="icon-btn" title="Share">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        </button>
+        <button class="icon-btn save-btn" title="Save">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+`).join('');
+highlightsEl.querySelectorAll('.save-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    btn.classList.toggle('saved');
+    const svg = btn.querySelector('svg');
+    if(btn.classList.contains('saved')){
+      svg.setAttribute('fill','#ef4444');
+      svg.setAttribute('stroke','#ef4444');
+    } else {
+      svg.setAttribute('fill','none');
+      svg.setAttribute('stroke','currentColor');
+    }
+  });
+});
+
+/* ============================================================
+   Render: Keywords
+   ============================================================ */
+const keywordsEl = document.getElementById('keywords-list');
+const kwColors = ['#7c5cfc','#0ea5e9','#f59e0b','#22c55e','#ef4444','#8b5cf6'];
+keywordsEl.innerHTML = KEYWORDS.map((kw, i) => {
+  const size = 12 + (i < 6 ? 3 : 0) + (i < 3 ? 2 : 0);
+  return `<span class="keyword" style="font-size:${size}px;color:${kwColors[i % kwColors.length]}">${kw}</span>`;
+}).join('');
+
+/* ============================================================
+   Render: Mindmap via markmap
+   ============================================================ */
+function renderMindmap(){
+  const svgEl = document.getElementById('markmap-svg');
+  const { Transformer, Markmap } = window.markmap;
+  const transformer = new Transformer();
+  const { root } = transformer.transform(MINDMAP_MD);
+  Markmap.create(svgEl, {
+    autoFit: true,
+    color: (node) => {
+      const colors = ['#7c5cfc','#0ea5e9','#f59e0b','#22c55e','#ef4444','#8b5cf6'];
+      return colors[node.state?.depth % colors.length] || '#7c5cfc';
+    },
+    duration: 500,
+    maxWidth: 300,
+    paddingX: 16,
+    scrollForPan: true,
+  }, root);
+}
+renderMindmap();
+
+/* ============================================================
+   Tab switching
+   ============================================================ */
+const tabs = document.querySelectorAll('.tab');
+const panels = document.querySelectorAll('.panel');
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    const name = tab.dataset.tab;
+    tabs.forEach(t => t.classList.toggle('active', t === tab));
+    panels.forEach(p => p.classList.toggle('active', p.dataset.panel === name));
+  });
+});
+
+/* ============================================================
+   Play button toggle
+   ============================================================ */
+let playing = false;
+const miniPlay = document.getElementById('mini-play');
+function syncPlay(){
+  miniPlay.innerHTML = playing
+    ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>'
+    : '<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+}
+miniPlay.addEventListener('click', () => { playing = !playing; syncPlay(); });
+
+/* ============================================================
+   Theme + background tweaks
+   ============================================================ */
+const BG_TINTS = {
+  lavender: {light:'#f0eeff', dark:'#0d0b14'},
+  neutral:  {light:'#f5f5f5', dark:'#0f0f0f'},
+  white:    {light:'#ffffff', dark:'#0f0f0f'},
+};
+let curTheme = 'light', curBg = 'lavender';
+
+function applyTheme(){
+  document.body.setAttribute('data-theme', curTheme);
+  document.documentElement.style.setProperty('--bg', BG_TINTS[curBg][curTheme]);
+}
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  curTheme = curTheme === 'light' ? 'dark' : 'light';
+  applyTheme();
+  document.querySelectorAll('[data-theme-choice]').forEach(b =>
+    b.classList.toggle('on', b.dataset.themeChoice === curTheme));
+});
+
+/* Sidebar nav */
+document.querySelectorAll('.nav-item[data-nav]').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item[data-nav]').forEach(n => n.classList.remove('active'));
+    item.classList.add('active');
+  });
+});
+
+/* Tweaks panel open/close */
+const tweaksEl = document.getElementById('tweaks');
+const trigger = document.getElementById('tweaks-trigger');
+trigger.addEventListener('click', () => {
+  tweaksEl.style.display = 'block';
+  trigger.style.display = 'none';
+});
+document.getElementById('tweaks-close').addEventListener('click', () => {
+  tweaksEl.style.display = 'none';
+  trigger.style.display = 'flex';
+});
+document.querySelectorAll('[data-theme-choice]').forEach(b => {
+  b.addEventListener('click', () => {
+    curTheme = b.dataset.themeChoice;
+    document.querySelectorAll('[data-theme-choice]').forEach(x =>
+      x.classList.toggle('on', x === b));
+    applyTheme();
+  });
+});
+document.querySelectorAll('[data-bg-choice]').forEach(b => {
+  b.addEventListener('click', () => {
+    curBg = b.dataset.bgChoice;
+    document.querySelectorAll('[data-bg-choice]').forEach(x =>
+      x.classList.toggle('on', x === b));
+    applyTheme();
+  });
+});
+</script>
+</body>
+</html>
