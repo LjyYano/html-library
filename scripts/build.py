@@ -144,36 +144,292 @@ filter();
                     .replace('__DATA__', data))
 
 
+
+
+# Shared, quiet Notion-style reading typography (applied only to known layouts).
+NOTION_WEALTH_CSS = r'''<style id="notion-reading-theme">
+:root{--bg:#fff;--card:#fff;--sidebar:#f7f7f5;--surface:#f7f7f5;--chip:#efefed;--fg:#37352f;--fg-muted:#787774;--fg-soft:#9b9a97;--line:#e9e9e7;--accent:#2383e2;--accent-strong:#1e6cbd;--accent-subtle:#edf4ff;--shadow:none;--shadow-lg:0 8px 28px #00000020;--article-size:16px;--radius:0;--font:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans CJK SC","PingFang SC","Microsoft YaHei",sans-serif}
+[data-theme="dark"]{--bg:#191919;--card:#191919;--sidebar:#202020;--surface:#252525;--chip:#2c2c2c;--fg:#e4e4e2;--fg-muted:#aaa9a4;--fg-soft:#8c8b86;--line:#343434;--accent:#70aff0;--accent-strong:#89bded;--accent-subtle:#273a4c;--shadow:none}
+body{background:var(--bg)}.page-wrap{max-width:1050px;margin:0 auto 30px;padding:0 23px}.site-card{border:0;box-shadow:none;border-radius:0}
+.sidebar{padding-top:23px}.brand-icon{background:#ecebea;color:#55534e;box-shadow:none;border-radius:6px}[data-theme="dark"] .brand-icon{background:#333;color:#ddd}
+.nav-kicker{font-size:11px;letter-spacing:0;font-weight:500}.primary-nav button{border-radius:5px;font-weight:500}.primary-nav button.active{background:var(--chip);color:var(--fg);font-weight:670}.toc-link{border-radius:5px}.toc-link.is-current{background:var(--chip);color:var(--fg)}.sidebar-status{display:none}
+.hero{padding:50px 46px 27px;gap:0;border-bottom:0}.cover{display:none}.hero-eyebrow,.hero-description{display:none}.hero h1{font-size:32px;line-height:1.35;letter-spacing:-.035em;font-weight:730;margin:0 0 10px}.hero-footer{font-size:12px;color:var(--fg-muted);gap:12px}.hero-footer a{color:var(--fg-muted);font-weight:500}.hero-footer a:hover{color:var(--accent)}
+.tabbar{padding:0 34px;border-top:1px solid var(--line);box-shadow:none}.tab-list{gap:8px}.tab{font-size:13px;padding:14px 11px 13px}.tab.active{font-weight:660;color:var(--fg);border-color:var(--fg)}
+.panel{padding:31px 46px 64px}.panel-kicker{display:none}.panel-title{font-weight:730;font-size:24px}.panel-intro{display:none}
+.article-toolbar{border-bottom:0;margin-bottom:22px;padding:0}.searchbox{background:var(--surface);border-color:transparent;border-radius:6px}.action,.font-control{border-radius:6px}.article-stats{display:none}
+.article-body{max-width:760px;line-height:1.92;letter-spacing:0;font-weight:400}.article-body .article-title-original{display:none}.article-body h2{font-size:24px;line-height:1.4;margin:47px 0 18px;letter-spacing:-.025em;font-weight:730}.article-body h3{font-size:19px;line-height:1.45;margin:32px 0 17px;font-weight:680}.article-body p{margin-bottom:18px;line-height:1.92}.article-body strong{font-weight:700}
+.article-body .notion-red{color:#d44b40;font-weight:680}.article-body .notion-callout{display:flex;gap:12px;align-items:flex-start;margin:23px 0 25px;padding:17px 19px;border-radius:5px;background:#f7f7f5;border:0}.article-body .notion-callout.warning{background:#fff6e5}[data-theme="dark"] .article-body .notion-callout{background:#292929}[data-theme="dark"] .article-body .notion-callout.warning{background:#342d21}
+.notion-callout-icon{font-size:19px;line-height:1.6;flex:0 0 24px}.notion-callout-content{flex:1;min-width:0}.article-body .notion-callout p{margin:0;line-height:1.85}.article-body .notion-callout strong{font-weight:700}
+.summary-hero{background:var(--surface);border:0;border-radius:6px}.summary-hero .eyebrow{color:var(--fg-muted)}.mistake,.milestone,.notes-callout{border-radius:6px;background:var(--surface)}.keyword-chip{border-radius:6px}.quote-card{border-radius:6px}.map-root{background:#4779ac;box-shadow:none;border-radius:7px}.mindmap-stage{border-radius:6px;background:var(--surface)}
+.mobile-article-toc{background:var(--surface);border-radius:6px}
+@media(max-width:850px){.page-wrap{margin:0 auto 25px;padding:0 9px}.hero{padding:30px 24px 20px}.hero h1{font-size:25px}.tabbar{padding:0 13px}.panel{padding:27px 24px 43px}.article-body h2{font-size:22px}.article-body h3{font-size:19px}}
+@media(max-width:620px){.hero{padding:27px 16px 18px}.hero h1{font-size:23px}.panel{padding:22px 16px 38px}.article-body p{margin-bottom:17px}.article-body .notion-callout{padding:14px 13px;gap:9px}}
+</style>'''
+
+NOTION_CAR_CSS = r'''<style id="notion-reading-theme">
+:root{--bg:#fff;--bg-card:#fff;--bg-sidebar:#f7f7f5;--bg-surface:#f7f7f5;--bg-hover:#efefed;--bg-press:#e9e9e7;--bg-chip:#f1f1ef;--border:#e9e9e7;--border-subtle:#eee;--fg1:#37352f;--fg2:#787774;--fg3:#9b9a97;--accent:#2383e2;--accent-hover:#1d6cba;--accent-subtle:#edf4ff;--shadow-md:none;--shadow-lg:0 8px 20px #00000015;--font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans CJK SC","PingFang SC","Microsoft YaHei",sans-serif}
+[data-theme="dark"]{--bg:#191919;--bg-card:#191919;--bg-sidebar:#202020;--bg-surface:#262626;--bg-hover:#303030;--bg-press:#363636;--bg-chip:#333;--border:#343434;--border-subtle:#343434;--fg1:#e4e4e2;--fg2:#a4a39e;--fg3:#777;--accent:#70aff0;--accent-subtle:#273b4d;--shadow-md:none}
+.app{background:var(--bg)}.sidebar{padding-top:22px}.logo{padding-bottom:23px}.logo-mark span{background:var(--fg2)}.nav-item{border-radius:5px}.nav-item.active{background:var(--bg-press)}.mini-player{display:none}.prev-next,.layout-toggle{display:none}
+.content-card{width:100%;max-width:990px;margin:0 auto;border:0;box-shadow:none;border-radius:0}.episode-header{border-bottom:0;padding:50px 45px 30px}.episode-row{gap:0}.episode-cover{display:none}.episode-title{font-size:32px;letter-spacing:-.035em;font-weight:730;line-height:1.35}.meta-line{margin-bottom:12px}.podcast-row{margin:0}.podcast-name{font-size:12px;color:var(--fg2)}
+.tabbar{padding:0 30px;border-top:1px solid var(--border)}.tab{font-size:13px;padding:14px 12px}.tab.active{color:var(--fg1);font-weight:700;border-color:var(--fg1)}
+.panel{padding:32px 45px 54px}.section-title{letter-spacing:0;text-transform:none;font-size:12px}.summary-body,.shownotes p{font-size:15px;line-height:1.9}.highlight,.tip-box,.personal-thoughts{border-radius:6px}
+.search-bar{background:var(--bg-surface);border:1px solid transparent;border-radius:6px;max-width:540px}.turn{padding:23px 0 26px;margin:0;border-bottom:1px solid var(--border)}.turn-head{gap:11px;align-items:center;margin-bottom:11px}.turn-ts{font-size:11px;color:var(--fg3)}.turn-topic{font-size:17px;letter-spacing:-.2px;color:var(--fg1);font-weight:700}.turn-body{font-size:15.5px;line-height:1.92;color:var(--fg1);padding:0;border-left:0;white-space:normal}.turn.active .turn-body{border-left:0}.turn-divider{display:none}.turn[data-i="5"] .turn-body{background:var(--bg-surface);padding:17px 20px;border-radius:5px}.notion-red{font-weight:680;color:#d44b40}.notion-strong{font-weight:700;color:var(--fg1)}
+.tweaks-trigger{border-radius:9px}.tweaks{border-radius:9px}
+@media(max-width:860px){.episode-header{padding:26px 22px 24px}.episode-title{font-size:24px}.panel{padding:22px 20px 40px}.tabbar{padding:0 10px}.turn{padding:20px 0}.turn-body{font-size:15px}.turn-topic{font-size:16px}}
+</style>'''
+
+NOTION_CAR_JS = r'''<script id="notion-car-transcript-enhancer">
+(() => {
+  const list = document.getElementById('transcript-list');
+  if (!list) return;
+  const red = [
+    '买一辆20万的车会让财务自由推迟多久',
+    '真正决定你晚几年的，是你选多贵的车',
+    '拿某一年25%的收益去规划后面几十年',
+    '上班能不能自由，不看工资多高，看储蓄率能不能过三成',
+    '换车金这条批评是对的',
+    '47岁自由，你还有21年健康的自由时间',
+    '从10万升级到20万',
+    '愿意为它多上几年班'
+  ];
+  const strong = [
+    '晚了9.2年', '光是买车加上每十年换一次车',
+    '3%不是悲观', '财务自由不是一个固定数字',
+    '推迟时间从9.2年降到8.6年', '56岁才自由，只剩12年',
+    '买什么档次', '小城市电车大约晚七年'
+  ];
+  const decorateText = (holder, phrases) => {
+    const walker = document.createTreeWalker(holder, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    let node;
+    while ((node = walker.nextNode())) {
+      if (node.parentElement?.closest('mark, .notion-red, .notion-strong')) continue;
+      nodes.push(node);
+    }
+    nodes.forEach(textNode => {
+      const value = textNode.nodeValue;
+      const found = phrases.filter(p => value.includes(p.text)).map(p => ({...p, start:value.indexOf(p.text)}));
+      if (!found.length) return;
+      found.sort((a,b) => a.start - b.start || b.text.length - a.text.length);
+      const frag=document.createDocumentFragment();
+      let offset=0;
+      for (const f of found) {
+        if (f.start < offset) continue;
+        frag.append(document.createTextNode(value.slice(offset,f.start)));
+        const el = document.createElement(f.cls==='notion-red'?'strong':'strong');
+        el.className=f.cls;
+        el.textContent=f.text;
+        frag.append(el);
+        offset=f.start+f.text.length;
+      }
+      frag.append(document.createTextNode(value.slice(offset)));
+      textNode.replaceWith(frag);
+    });
+  };
+  function refresh() {
+    [...list.querySelectorAll('.turn')].forEach(turn => {
+      if (turn.dataset.notionEnhanced === 'yes') return;
+      turn.dataset.notionEnhanced='yes';
+      const i=Number(turn.dataset.i);
+      const head=turn.querySelector('.turn-head');
+      if (head && typeof OUTLINES !== 'undefined' && OUTLINES[i]) {
+        const title=document.createElement('strong');
+        title.className='turn-topic';
+        title.textContent=OUTLINES[i].text;
+        head.append(title);
+      }
+      const body=turn.querySelector('.turn-body');
+      if (body) decorateText(body,[{text:red[i],cls:'notion-red'},{text:strong[i],cls:'notion-strong'}].filter(x=>x.text));
+    });
+  }
+  new MutationObserver(refresh).observe(list,{childList:true});
+  refresh();
+})();
+</script>'''
+
+# Select few original paragraphs for Notion callouts. Text remains untouched.
+WEALTH_CALLOUTS = (
+    ('风是你的工资，洋流是积累的资产所产生的被动收入', 'idea', '💡'),
+    ('当然，这是一个高度简化的数学模型', 'warning', '⚠'),
+    ('数学模型的价值不是消除不确定性', 'idea', '💡'),
+    ('不作为本身也是一种投资决策', 'idea', '📌'),
+)
+WEALTH_RED_WORDS = (
+    '工作是财富积累的手段，而不是人生的目的',
+    '可定价、可变现、可被动增值',
+    '原始积累虽然困难，但并非遥不可及',
+    '数学模型的价值不是消除不确定性',
+    '不作为本身也是一种投资决策',
+    '复利最大的优势来自时间',
+)
+
+
+def polish_document(html_doc: str, source_path: Path) -> str:
+    is_wealth = 'class="tab-list"' in html_doc and 'id="panel-transcript"' in html_doc
+    is_car = 'id="tabs"' in html_doc and 'data-panel="transcript"' in html_doc
+    if is_wealth:
+        # Presentation-only metadata, counters, and instructional descriptions; never remove article text.
+        html_doc = re.sub(r'<div class="article-stats">.*?</div>', '', html_doc, count=1, flags=re.S)
+        html_doc = re.sub(r'<span>约 [\d,]+ 字 · \d+ 个自然段</span>', '', html_doc, count=1)
+        html_doc = re.sub(r'<footer class="article-footer">.*?</footer>', '', html_doc, count=1, flags=re.S)
+        html_doc = re.sub(r'<p class="map-note">.*?</p>', '', html_doc, count=1, flags=re.S)
+        html_doc = re.sub(r'<p class="fine-print">.*?</p>', '', html_doc, count=1, flags=re.S)
+        html_doc = re.sub(r'<p class="panel-intro[^"]*">.*?</p>', '', html_doc, flags=re.S)
+        html_doc = re.sub(r'<span class="quote-no">\d+ / \d+</span>', '', html_doc)
+        html_doc = html_doc.replace('>全文可搜索</span>', '></span>').replace("'全文可搜索'", "''")
+        html_doc = html_doc.replace('>完整文字版</span>', '></span>')
+        html_doc = html_doc.replace('<small>点击下方目录可直达全文</small>', '')
+        html_doc = html_doc.replace('<small>5 个主要章节</small>', '')
+        # One paragraph, one original block: replacing only its markup, never text.
+        ptag = re.compile(r'<p class="reading-paragraph" data-searchable="true">.*?</p>', re.S)
+        counts={k:0 for k,_,_ in WEALTH_CALLOUTS}
+        def paragraph_style(m):
+            original=m.group(0)
+            for key in WEALTH_RED_WORDS:
+                if key in original:
+                    original = original.replace(key, f'<span class="notion-red">{key}</span>')
+            for key,kind,icon in WEALTH_CALLOUTS:
+                if key in original:
+                    counts[key]+=1
+                    return (f'<aside class="notion-callout {kind}"><span class="notion-callout-icon" aria-hidden="true">{icon}</span>'
+                            f'<div class="notion-callout-content">{original}</div></aside>')
+            return original
+        html_doc=ptag.sub(paragraph_style,html_doc)
+        # Reproduce requested callouts, but keep compatibility with new articles missing specific paragraphs.
+        if not all(v == 1 for v in counts.values()):
+            print(f'[notice] {source_path}: callouts found {counts}')
+        html_doc=html_doc.replace('</head>', NOTION_WEALTH_CSS+'\n</head>',1)
+        return html_doc
+    if is_car:
+        html_doc=html_doc.replace('placeholder="Search transcript…"','placeholder="搜索文稿…"')
+        for english,chinese in [('Summary','摘要'),('Mindmap','思维导图'),('Transcript','完整文稿'),('Keywords','关键词'),('Highlights','金句'),('Shownotes','笔记')]:
+            html_doc=re.sub(r'(?<![a-zA-Z])'+english+r'(?=\s*</button>)',chinese,html_doc)
+        html_doc=html_doc.replace('7 highlights · tap to save','精选金句')
+        html_doc=html_doc.replace('Keywords mentioned in this episode','关键词')
+        html_doc=html_doc.replace('</head>', NOTION_CAR_CSS+'\n</head>',1)
+        html_doc=html_doc.replace('</body>', NOTION_CAR_JS+'\n</body>',1)
+        return html_doc
+    return html_doc
+
+
+def stylize_quote(text: str, card: dict, mode: str = 'html') -> str:
+    # Crucial: this only inserts style tags around exact substrings; it never changes the quote.
+    decorations = []
+    for kind in ('bold','red'):
+        for phrase in card.get(kind,[]):
+            if not isinstance(phrase,str) or not phrase:continue
+            start=text.find(phrase)
+            if start >= 0:
+                decorations.append((start,start+len(phrase),kind))
+    if not decorations:
+        return html.escape(text,quote=True) if mode=='html' else text
+    # Overlay markup by source character position so overlapping red/bold stays valid HTML.
+    boundaries = sorted({0,len(text),*(pos for a,b,_ in decorations for pos in (a,b))})
+    out=[]
+    for left,right in zip(boundaries,boundaries[1:]):
+        if left==right: continue
+        state={kind for a,b,kind in decorations if a<=left and right<=b}
+        part=html.escape(text[left:right],quote=True) if mode=='html' else text[left:right]
+        if mode=='html':
+            if 'red' in state:
+                part=f'<strong style="color:#d44b40;font-weight:700">{part}</strong>'
+            elif 'bold' in state:
+                part=f'<strong>{part}</strong>'
+        elif mode=='markdown':
+            if 'red' in state:
+                part=f'<span style="color:#d44b40;font-weight:700">{part}</span>'
+            elif 'bold' in state:
+                part=f'**{part}**'
+        out.append(part)
+    return ''.join(out)
+
+
 ANKI_STYLE = r'''<style id="anki-tab-style">
-.anki-page {--anki-ink:var(--fg,var(--fg1,#282734));--anki-muted:var(--fg-muted,var(--fg2,#696877));--anki-line:var(--line,var(--border,#e6e5ea));--anki-bg:var(--surface,var(--bg-surface,#fafafa));--anki-accent:var(--accent,#7657e9);color:var(--anki-ink);max-width:850px;margin:auto}
-.anki-kicker{font-size:11px;font-weight:750;letter-spacing:1.1px;color:var(--anki-accent);margin-bottom:10px}.anki-title{font-size:24px;margin:0 0 9px;font-weight:750;letter-spacing:-.4px;line-height:1.4}
-.anki-description{font-size:13px;line-height:1.8;color:var(--anki-muted);margin:0}.anki-hint{font-size:12px;line-height:1.8;color:var(--anki-muted);margin:9px 0 0}
-.anki-controls{margin:20px 0 26px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}.anki-export{display:inline-flex;align-items:center;gap:6px;background:var(--anki-bg);color:var(--anki-ink);border:1px solid var(--anki-line);padding:9px 14px;border-radius:8px;font-size:12px;text-decoration:none;font-weight:650}.anki-export:hover{color:var(--anki-accent);border-color:var(--anki-accent)}.anki-count{font-size:12px;color:var(--anki-muted);margin-left:auto}
-.anki-cards{display:flex;flex-direction:column;gap:11px}.anki-card{border:1px solid var(--anki-line);border-radius:11px;overflow:hidden}.anki-card summary{list-style:none;cursor:pointer;padding:18px 19px;outline:none}.anki-card summary::-webkit-details-marker{display:none}.anki-card summary:focus-visible{outline:2px solid var(--anki-accent);outline-offset:-2px}.anki-card[open] summary{border-bottom:1px solid var(--anki-line)}.anki-card summary:hover{background:var(--anki-bg)}
-.anki-card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px}.anki-card-no{font-size:11px;color:var(--anki-accent);font-weight:760}.anki-card-label{font-size:11px;color:var(--anki-muted)}.anki-card summary p{font-size:15px;line-height:1.85;margin:0;color:var(--anki-ink);font-weight:560}.anki-caret{display:inline-block;font-size:12px;color:var(--anki-muted);transition:transform .2s}.anki-card[open] .anki-caret{transform:rotate(180deg)}.anki-context{padding:18px 19px 19px;background:var(--anki-bg)}.anki-context h3{color:var(--anki-muted);font-size:11px;letter-spacing:.4px;font-weight:700;margin:0 0 9px}.anki-context p{font-size:13px;color:var(--anki-muted);line-height:1.9;margin:0}.anki-time{display:block;color:var(--anki-accent);margin-top:12px;font-size:11px;font-variant-numeric:tabular-nums}.anki-bottom-note{color:var(--anki-muted);font-size:11px;line-height:1.85;margin-top:21px}
-@media(max-width:700px){.anki-controls{gap:8px}.anki-count{width:100%;margin-left:0}.anki-card summary{padding:15px}.anki-context{padding:15px}.anki-card summary p{font-size:14px}}
+.anki-page{--anki-ink:var(--fg,var(--fg1,#37352f));--anki-muted:var(--fg-muted,var(--fg2,#787774));--anki-line:var(--line,var(--border,#e9e9e7));--anki-bg:var(--surface,var(--bg-surface,#f7f7f5));--anki-accent:var(--accent,#2383e2);max-width:770px;margin:0 auto;color:var(--anki-ink)}
+.anki-title{font-size:26px;line-height:1.35;font-weight:750;margin:4px 0 19px;letter-spacing:-.035em;color:var(--anki-ink)}
+.anki-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:28px}
+.anki-export,.anki-copy-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:550;border:1px solid var(--anki-line);color:var(--anki-muted);background:transparent;border-radius:6px;padding:7px 11px;line-height:1.3;text-decoration:none;cursor:pointer;transition:background .14s,color .14s}
+.anki-export:hover,.anki-copy-btn:hover{background:var(--anki-bg);color:var(--anki-ink)}.anki-copy-btn:focus-visible{outline:2px solid var(--anki-accent);outline-offset:2px}
+.anki-copy-btn{white-space:nowrap;font-size:11.5px;padding:6px 10px}.anki-copy-btn svg{height:13px;width:13px;fill:none;stroke:currentColor;stroke-width:1.8}
+.anki-cards{display:flex;flex-direction:column;gap:12px}
+.anki-card{border:1px solid var(--anki-line);border-radius:7px;overflow:hidden;background:transparent}
+.anki-card>summary{list-style:none;cursor:pointer;padding:20px 20px 19px}.anki-card>summary::-webkit-details-marker{display:none}.anki-card>summary:focus-visible{outline:2px solid var(--anki-accent);outline-offset:-2px}.anki-card>summary:hover{background:var(--anki-bg)}.anki-card[open]>summary{border-bottom:1px solid var(--anki-line)}
+.anki-card-head{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:13px}.anki-card-no{font-size:12px;color:var(--anki-muted);font-weight:570}.anki-card-actions{display:flex;align-items:center;gap:11px;margin-left:auto}
+.anki-caret{color:var(--anki-muted);font-size:13px;transition:transform .18s}.anki-card[open] .anki-caret{transform:rotate(180deg)}
+.anki-front{font-size:16px;line-height:1.9;color:var(--anki-ink);font-weight:450;margin:0}.anki-front strong,.anki-back strong{font-weight:700}.anki-front strong[style],.anki-back strong[style]{color:#d44b40!important}
+.anki-context{padding:17px 20px 19px;background:var(--anki-bg)}.anki-back-head{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--anki-muted);margin-bottom:11px}.anki-back-head h3{font-size:12px;font-weight:610;letter-spacing:0;margin:0}.anki-back{font-size:14px;line-height:1.95;color:var(--anki-ink);margin:0}.anki-time{display:block;color:var(--anki-muted);font-size:11px;margin-top:15px}
+@media(max-width:700px){.anki-title{font-size:23px}.anki-card>summary{padding:15px}.anki-card-head{gap:8px}.anki-card-actions{gap:7px}.anki-front{font-size:15px}.anki-context{padding:15px}.anki-back{font-size:13.5px}}
 </style>'''
 
 
 def export_anki_files(page_dir: Path, record: dict) -> None:
     cards = record['cards']
-    lines = ['# ' + record.get('title', 'Anki 精选原句'), '',
-             '> ' + record.get('source_note', ''), '',
-             f'> 共 {len(cards)} 张，Basic（正面 / 背面）；忠实摘录，非问答卡。', '']
+    lines = ['# ' + record.get('title', 'Anki 精选原句'), '']
     tsv_lines = []
     for i, card in enumerate(cards, 1):
         title, front, back, stamp = (str(card[k]).strip() for k in ('title', 'front', 'back', 'time'))
         if not front or not back or not stamp:
             raise ValueError(f'Anki card {i} has an empty field')
-        lines += [f'## {i}. {title}', '', '**正面（原句）**', '', '> ' + front, '',
-                  '**背面（连续原文上下文）**', '', '> ' + back, '',
+        for mark in card.get('bold',[]) + card.get('red',[]):
+            if mark not in front and mark not in back:
+                raise ValueError(f'Anki card {i}: style fragment not found in original quoted text: {mark}')
+        lines += [f'## {i}. {title}', '', '**正面**', '', '> ' + stylize_quote(front,card,'markdown'), '',
+                  '**背面**', '', '> ' + stylize_quote(back,card,'markdown'), '',
                   '*时间：' + stamp + '*', '', '---', '']
-        # Two TAB-separated columns, UTF-8, no header. HTML escapes and <br> keep fields in one row.
-        to_field = lambda x: html.escape(x, quote=True).replace('\t', ' ').replace('\n', '<br>')
-        back_html = f'<div>{to_field(back)}</div><div>时间：{to_field(stamp)}</div>'
-        tsv_lines.append(to_field(front) + '\t' + back_html)
+        to_field = lambda x: x.replace('\t',' ').replace('\n','<br>')
+        front_html=to_field(stylize_quote(front,card,'html'))
+        back_html=to_field(stylize_quote(back,card,'html'))
+        tsv_lines.append(front_html + '\t' + '<div>' + back_html + '</div><div style="color:#787774;font-size:12px">时间：'+html.escape(stamp)+'</div>')
     (page_dir / 'anki-cards.md').write_text('\n'.join(lines), encoding='utf-8')
     (page_dir / 'anki-import.tsv').write_text('\n'.join(tsv_lines) + '\n', encoding='utf-8')
+
+
+ANKI_COPY_JS = r'''<script id="anki-rich-clipboard">
+(() => {
+  async function copyRich(fragment, text) {
+    // HTML + text/plain payloads. Anki editor receives inline red/bold formatting.
+    const rich = '<div style="font-family:-apple-system,BlinkMacSystemFont,PingFang SC,Arial,sans-serif;font-size:15px;line-height:1.8;color:#37352f">'+fragment+'</div>';
+    if (navigator.clipboard && window.ClipboardItem && window.isSecureContext) {
+      try {
+        const clip = new ClipboardItem({'text/html':new Blob([rich],{type:'text/html'}),'text/plain':new Blob([text],{type:'text/plain'})});
+        await navigator.clipboard.write([clip]);
+        return 'rich';
+      } catch (e) { /* Next try legacy rich-copy fallback. */ }
+    }
+    const scratch=document.createElement('div');
+    scratch.contentEditable='true';
+    scratch.style.cssText='position:fixed;left:-10000px;top:0;opacity:0;';
+    scratch.innerHTML=rich;
+    document.body.append(scratch);
+    const range=document.createRange(); range.selectNodeContents(scratch);
+    const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);
+    let copied=false;
+    try {copied=document.execCommand('copy')} catch(e){}
+    sel.removeAllRanges();scratch.remove();
+    if (copied) return 'rich';
+    if (navigator.clipboard?.writeText) {await navigator.clipboard.writeText(text);return 'plain'}
+    throw new Error('clipboard not available');
+  }
+  document.querySelectorAll('.anki-copy-btn').forEach(btn => {
+    btn.addEventListener('click', async (event) => {
+      event.preventDefault();event.stopPropagation();
+      const card=btn.closest('.anki-card');
+      const front=btn.dataset.copySide==='front';
+      const node=card.querySelector(front?'.anki-front':'.anki-back');
+      if(!node)return;
+      const stamp=card.querySelector('.anki-time')?.textContent||'';
+      const html=node.innerHTML+(front?'':'<div style="font-size:12px;color:#787774;margin-top:10px">时间：'+stamp+'</div>');
+      const plain=node.textContent+(front?'':'\n时间：'+stamp);
+      const label=btn.innerHTML;
+      try {
+        const mode=await copyRich(html,plain);
+        btn.textContent=mode==='rich'?'已复制（含格式）':'已复制文字';
+      } catch(e) {btn.textContent='复制失败';}
+      window.setTimeout(()=>{btn.innerHTML=label},1600);
+    });
+  });
+})();
+</script>'''
 
 
 def inject_anki(html_doc: str, record: dict, source_path: Path) -> str:
@@ -182,7 +438,7 @@ def inject_anki(html_doc: str, record: dict, source_path: Path) -> str:
     is_wealth = 'class="tab-list"' in html_doc and 'id="panel-notes"' in html_doc
     is_car = 'id="tabs"' in html_doc and 'data-panel="shownotes"' in html_doc
     if not (is_wealth or is_car):
-        raise ValueError(f'{source_path}: anki.json exists but HTML does not use the supported tab layout')
+        raise ValueError(f'{source_path}: anki.json exists but HTML does not use a supported tab layout')
     if is_wealth:
         tab_marker = '        <button type="button" class="tab" data-tab="notes"'
         panel_marker = '    <section class="panel" id="panel-notes"'
@@ -191,23 +447,22 @@ def inject_anki(html_doc: str, record: dict, source_path: Path) -> str:
         tab_marker = '          <button class="tab" data-tab="shownotes"'
         panel_marker = '      <section class="panel" data-panel="shownotes"'
         tab = '<button class="tab" data-tab="anki"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h10M7 14h6"/></svg>Anki</button>'
-    cards = record['cards']
     chunks = []
-    for i, card in enumerate(cards, 1):
-        front, back = html.escape(card['front']), html.escape(card['back'])
+    copy_icon='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>'
+    for i, card in enumerate(record['cards'], 1):
+        front, back = stylize_quote(card['front'],card), stylize_quote(card['back'],card)
         title, tm = html.escape(card['title']), html.escape(card['time'])
-        chunks.append(f'''<details class="anki-card"><summary><div class="anki-card-head"><span class="anki-card-no">{i:02d} · {title}</span><span class="anki-caret">⌄</span></div><p>{front}</p></summary><div class="anki-context"><h3>背面 · 连续原文上下文</h3><p>{back}</p><span class="anki-time">{tm}</span></div></details>''')
-    section = f'''<section class="panel" id="panel-anki" data-panel="anki" role="tabpanel" aria-label="Anki 原句卡片"><div class="anki-page"><div class="anki-kicker">SPACED REPETITION / 原句卡片</div><h2 class="anki-title">Anki · 精选原句</h2><p class="anki-description">{html.escape(record.get('source_note',''))}</p><p class="anki-hint">正面保留原句，点击卡片查看连续上下文；不采用 AI 问答改写。</p><div class="anki-controls"><a class="anki-export" href="anki-import.tsv" download>↓ 导出 TSV（Basic）</a><a class="anki-export" href="anki-cards.md" download>↓ 导出 Markdown</a><span class="anki-count">精选 {len(cards)} 张</span></div><div class="anki-cards">{''.join(chunks)}</div><p class="anki-bottom-note">导入 Anki：笔记类型选择 Basic，分隔符选择 Tab，第一列正面、第二列背面，并启用 HTML 字段。卡片内容是来源文本摘录，不代表对所述观点进行了事实核验。</p></div></section>'''
+        chunks.append(f'''<details class="anki-card"><summary><div class="anki-card-head"><span class="anki-card-no">{i:02d} / {title}</span><span class="anki-card-actions"><button type="button" class="anki-copy-btn" data-copy-side="front" aria-label="复制第 {i} 张卡片正面">{copy_icon}复制正面</button><span class="anki-caret">⌄</span></span></div><p class="anki-front">{front}</p></summary><div class="anki-context"><div class="anki-back-head"><h3>上下文</h3><button type="button" class="anki-copy-btn" data-copy-side="back" aria-label="复制第 {i} 张卡片背面">{copy_icon}复制背面</button></div><p class="anki-back">{back}</p><span class="anki-time">{tm}</span></div></details>''')
+    section=f'''<section class="panel" id="panel-anki" data-panel="anki" role="tabpanel" aria-label="Anki 卡片"><div class="anki-page"><h2 class="anki-title">Anki</h2><div class="anki-controls"><a class="anki-export" href="anki-import.tsv" download>↓ 导出 TSV</a><a class="anki-export" href="anki-cards.md" download>↓ 导出 Markdown</a></div><div class="anki-cards">{''.join(chunks)}</div></div></section>'''
     if html_doc.count(tab_marker) != 1 or html_doc.count(panel_marker) != 1:
-        raise ValueError(f'{source_path}: Anki injection anchors missing or not unique')
+        raise ValueError(f'{source_path}: Anki insertion anchors missing or not unique')
     html_doc = html_doc.replace(tab_marker, tab+'\n'+tab_marker, 1)
     html_doc = html_doc.replace(panel_marker, section+'\n'+panel_marker, 1)
     html_doc = html_doc.replace('</head>', ANKI_STYLE+'\n</head>', 1)
+    html_doc = html_doc.replace('</body>', ANKI_COPY_JS+'\n</body>', 1)
     if is_wealth:
-        html_doc = html_doc.replace("['summary','mindmap','keywords','highlights','notes'].includes(hash)", "['summary','mindmap','keywords','highlights','notes','anki'].includes(hash)", 1)
+        html_doc=html_doc.replace("['summary','mindmap','keywords','highlights','notes'].includes(hash)","['summary','mindmap','keywords','highlights','notes','anki'].includes(hash)",1)
     return html_doc
-
-
 def main() -> None:
     if DIST.exists():
         shutil.rmtree(DIST)
@@ -227,7 +482,8 @@ def main() -> None:
         article['anki_count'] = len(record['cards'])
         dest = DIST / src.relative_to(PAGES)
         export_anki_files(dest.parent, record)
-        dest.write_text(inject_anki(dest.read_text(encoding='utf-8'), record, src), encoding='utf-8')
+        polished = polish_document(dest.read_text(encoding='utf-8'), src)
+        dest.write_text(inject_anki(polished, record, src), encoding='utf-8')
     articles.sort(key=lambda a: (a["date"], a["title"]), reverse=True)
     (DIST / "index.html").write_text(render_home(articles), encoding="utf-8")
     cname = ROOT / "CNAME"
