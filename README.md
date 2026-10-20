@@ -1,40 +1,67 @@
 # Yano · HTML 阅读书架
 
-使用 GitHub Pages 托管的静态 HTML 文章库，自动生成目录和搜索首页。
+静态 HTML 收藏库，使用 GitHub Pages 自动部署。
 
-**仓库**：https://github.com/LjyYano/html-library
+- 首页：https://read.yano.blog/
+- 仓库：https://github.com/LjyYano/html-library
+- 页面：[原始积累的 5 条建议](https://read.yano.blog/wealth-tips/) · [买车成本分析](https://read.yano.blog/car-cost/)
 
-**计划域名**：https://read.yano.blog
+## 1. 首页
 
-## 启用 GitHub Pages
+首页自动生成 **Notion 风格表格**：一篇 HTML 对应一行，展示名称、分类、标签和日期；支持搜索、行点击跳转和深浅色切换，不添加宣传区或卡片网格。
 
-1. 仓库打开 **Settings → Pages → Build and deployment → Source**，选择 **GitHub Actions**。
-2. 如 Actions 部署没有自动触发，打开 **Actions → Build and deploy HTML library → Run workflow**，选 main。
-3. GitHub Pages 站点启用后，在 **Settings → Pages → Custom domain** 填写 read.yano.blog。
-4. 到 yano.blog 的 DNS 托管平台添加 `CNAME`：主机记录 `read`，目标 `LjyYano.github.io`（不带 https:// 和仓库路径）。
-5. 验证域名后，在 GitHub Pages 设置开启 **Enforce HTTPS**。
+## 2. 新增网页
 
-配置完成后，首页 https://read.yano.blog/ ，文章 https://read.yano.blog/wealth-tips/ 和 https://read.yano.blog/car-cost/ 。
-
-## 后续新增 HTML
-
-将文章存为 `pages/<slug>/index.html` 即可；可选创建同目录的 `article.json` 设置标题、摘要、分类、标签及日期。
+创建 `pages/<slug>/index.html`，可选在同目录添加 `article.json`：
 
 ```json
 {
-  "title": "示例文章",
-  "description": "简短介绍",
+  "title": "文章标题",
+  "description": "简短描述",
   "category": "读书笔记",
   "tags": ["阅读", "笔记"],
-  "date": "2026-10-20"
+  "date": "2026-10-20",
+  "source": "Bilibili"
 }
 ```
 
-提交到 `main` 后，GitHub Actions 运行 `python scripts/build.py` 自动扫描文章、生成首页与 `articles.json`，并部署到 GitHub Pages。支持独立 HTML 里的原有 CSS 和 JavaScript。
+直接提交到 `main`，GitHub Actions 会生成首页索引并部署，无需手动维护目录。
 
-也可以直接添加 `pages/<slug>.html` 文件。若无 article.json，使用 HTML 的 `<title>` 和 `meta description`。
+## 3. 为阅读网页增加 Anki Tab
 
-## 本地预览
+同目录添加 `anki.json` 后，构建脚本会将 **Anki** 标签嵌入已有的 tab 布局，生成可展开的原句卡片，同时提供 `anki-import.tsv` 和 `anki-cards.md` 下载。已支持本仓库两种阅读页面模板。
+
+JSON 结构：
+
+```json
+{
+  "title": "文章 · Anki 精选原句",
+  "source_type": "raw_srt",
+  "source_note": "根据原始字幕逐字摘录，时间为字幕原始区间。",
+  "source_url": "https://www.bilibili.com/video/XXXX/",
+  "cards": [
+    {
+      "title": "简短的中性主题",
+      "front": "字幕中的完整原句。",
+      "back": "包含此句的连续原文上下文。",
+      "time": "03:22–03:46"
+    }
+  ]
+}
+```
+
+请遵循原定 `subtitle-to-anki` 规则：
+
+- **默认 6–8 张**，宁少勿凑，按视频顺序去重。
+- **Anki Basic，不采用问答式**；正面是值得复习的原句，不是 AI 改写或总结。
+- 背面是**连续原文上下文和可信时间戳**，不得拼接不连续句子或杜撰案例。
+- 只补标点、调整换行；逐句比对原始字幕，避免替换原词。
+- 缺少原始 SRT 的情况下，不把网页整理稿称为「原始字幕」，不推测时间码。
+- TSV 使用 UTF-8、**无表头、两列（正面 / 背面）**；Anki 导入时选择 Basic + Tab 分隔 + HTML 字段。
+
+`anki.json` 的选句需要根据来源人工/模型精读并完成校验；构建脚本仅负责渲染和导出，不从文章自动编造卡片。两份已配置的卡片集来自用户提供的 SRT（原始积累）和用户提供的 HTML 转录（买车分析）。
+
+## 4. 本地预览
 
 ```bash
 python3 scripts/build.py
@@ -43,8 +70,10 @@ python3 -m http.server 8000 --directory dist
 
 然后打开 http://localhost:8000/ 。
 
-## 提醒
+## 5. 部署与域名
 
-- 这是公开网站，请勿上传私密信息或未经许可的内容。
-- 公共发布第三方视频的完整字幕可能涉及版权，请确认授权和使用范围。
-- GitHub Pages 仅支持静态 HTML/CSS/JS，在部分地区可访问性可能随网络状况变化。
+- Settings → Pages → Source 选择 **GitHub Actions**。
+- DNS 添加 `CNAME`：主机 `read`，目标 `LjyYano.github.io`。
+- Settings → Pages → Custom domain 设置 `read.yano.blog`，验证后启用 HTTPS。
+
+**注意：** 当前仓库公开可见，不要提交个人隐私或未经授权的敏感内容；第三方视频完整转录公开转载可能存在版权问题。
