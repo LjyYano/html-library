@@ -1,0 +1,13 @@
+{
+  "title": "如何审核 AI 写的代码？从写代码到上线，一套保证产品质量的全流程",
+  "description": "Claude Code 团队从 PR 前验证、AI 代码审核、风险审批到灰度发布与回滚的完整质量流程。",
+  "category": "AI 与软件工程",
+  "tags": [
+    "AI Code Review",
+    "Claude Code",
+    "CI/CD",
+    "工程质量"
+  ],
+  "date": "2026-10-30",
+  "source": "Bilibili"
+}
