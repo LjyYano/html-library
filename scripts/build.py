@@ -17,6 +17,8 @@ import re
 import shutil
 from pathlib import Path
 
+from mindmap import OLD_ARTICLES, inject_mindmap
+
 ROOT = Path(__file__).resolve().parents[1]
 PAGES = ROOT / "pages"
 DIST = ROOT / "dist"
@@ -472,6 +474,15 @@ def main() -> None:
     files = sorted(p for p in PAGES.rglob("*.html") if p.is_file())
     articles = [parse_article(p) for p in files]
     for src, article in zip(files, articles):
+        # All new posts must use the shared Markmap tree renderer. Legacy posts
+        # retain their current presentation until explicitly migrated.
+        mindmap_path = src.parent / 'mindmap.md' if src.name == 'index.html' else src.with_suffix('.mindmap.md')
+        dest = DIST / src.relative_to(PAGES)
+        if mindmap_path.exists():
+            updated = inject_mindmap(dest.read_text(encoding='utf-8'), mindmap_path.read_text(encoding='utf-8'), src)
+            dest.write_text(updated, encoding='utf-8')
+        elif src.parent.name not in OLD_ARTICLES:
+            raise ValueError(f'{src}: new articles require mindmap.md (Markmap tree)')
         card_path = src.parent / 'anki.json' if src.name == 'index.html' else src.with_suffix('.anki.json')
         if not card_path.exists():
             article['anki_count'] = 0
