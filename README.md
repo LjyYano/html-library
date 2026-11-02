@@ -70,7 +70,7 @@ JSON 结构：
 从 2026-11-02 起，所有新增文章在 `pages/<slug>/` 中**必须**同时提交 `mindmap.md`，而不是自行绘制折叠卡片、宫格或列表。构建脚本检查此文件，缺少即构建失败；历史页面保留兼容例外。
 
 - `mindmap.md` 仅使用 Markdown 标题：一个 `# 根节点`、至少两个 `## 分支`，可继续使用 `###`、`####` 表达真实的知识层级，内容须根据原始字幕整理，不能凭空补充。
-- 页面仍保留 `data-tab="mindmap"` 和 `<section data-panel="mindmap">...</section>`。构建时 `scripts/mindmap.py` 会**自动替换**该区域，统一渲染为与 `car-cost` 同类的 **Markmap SVG 树状思维导图**（分支连线、节点展开/收起、缩放、平移、屏幕适配）。
+- 页面仍保留 `data-tab="mindmap"` 和 `<section data-panel="mindmap">...</section>`。构建时 `scripts/mindmap.py` 自动替换该区域：**严格复用 `pages/car-cost/index.html` 原版 Markmap 思维导图**，包括浅紫渐变、680px 画布、彩色分支和原版 Markmap 初始化参数。不额外增加独立标题、操作按钮或卡片式 UI。
 - 网页优先调用 Markmap 浏览器库；CDN 不可用或本地离线打开时，自动切换至纯 SVG 交互回退。无需额外运行服务器。
 - 可参考 `pages/ai-era-raising-children/mindmap.md` 的四层知识结构。今后新增页面只维护 `mindmap.md` 内容，无须复制或改写渲染 JS。
 

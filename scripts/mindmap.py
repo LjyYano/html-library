@@ -1,7 +1,8 @@
-"""Standard Markmap-style mindmaps for reading pages (Markdown -> interactive SVG).
+"""The shared mindmap template is the exact car-cost Markmap appearance and config.
 
-The page uses the same Markmap engine as car-cost when CDN assets are available,
-and a dependency-free interactive SVG fallback for local/offline reading.
+Legacy article pages are left unchanged. New pages must supply mindmap.md.
+When JSDelivr is unreachable, an interactive SVG fallback retains the same
+lavender/dark container styling without changing the online Markmap look.
 """
 from __future__ import annotations
 
@@ -14,70 +15,72 @@ OLD_ARTICLES = frozenset({
     'how-much-to-be-financially-free', 'nobel-expectations', 'wealth-tips',
 })
 
-STYLE = r'''<style id="yano-shared-mindmap-style">
-.yano-mindmap-inner{max-width:1000px!important}
-.yano-map-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 13px}
-.yano-map-heading h2{font-size:21px;font-weight:690;margin:0}
-.yano-map-actions{display:flex;gap:8px;align-items:center}
-.yano-map-actions button{font:inherit;font-size:12px;color:var(--fg,var(--fg1,#37352f));background:transparent;border:1px solid var(--line,var(--border,#e9e9e7));border-radius:5px;padding:6px 12px;cursor:pointer}
-.yano-map-actions button:hover{background:var(--surface,var(--bg-surface,#f7f7f5))}
-.yano-map-stage{position:relative;overflow:hidden;height:620px;min-height:380px;background:var(--surface,var(--bg-surface,#f7f7f5));border:1px solid var(--line,var(--border,#e9e9e7));border-radius:8px}
-.yano-map-stage>svg{width:100%;height:100%;display:block;touch-action:none;cursor:grab}
-.yano-map-stage>svg:active{cursor:grabbing}
-.yano-map-caption{color:var(--muted,var(--fg-muted,#787774));font-size:11px;margin:11px 0 0}
-.yano-map-stage .markmap{--markmap-text-color:var(--fg,var(--fg1,#37352f));--markmap-circle-open-bg:#9b9a97}
-[data-theme="dark"] .yano-map-stage .markmap{--markmap-text-color:#e5e5e5;--markmap-circle-open-bg:#aaa}
-.yano-map-stage .yano-fallback-node text{fill:var(--fg,var(--fg1,#37352f));font-size:14px;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Noto Sans CJK SC',sans-serif}
-.yano-map-stage .yano-fallback-node{cursor:pointer}
-@media(max-width:760px){.yano-map-stage{height:520px;min-height:350px}.yano-map-heading h2{font-size:19px}.yano-map-actions button{font-size:11px;padding:6px 9px}}
+# The following CSS is copied from pages/car-cost/index.html, including
+# the original lavender gradient, dark-mode gradient and fixed 680px height.
+# Only panel width/padding are adapted to the new reading shell so the canvas
+# has the same original 824px usable desktop width.
+STYLE = r'''<style id="yano-car-cost-mindmap-style">
+#panel-mindmap{max-width:880px;padding:20px 28px 40px}
+.mindmap-wrap{
+  background:linear-gradient(135deg,#f6f4ff 0%,#edeaff 100%);
+  border-radius:var(--radius-md,8px);
+  padding:20px 0;
+  overflow:hidden;
+  height:680px;
+  position:relative;
+}
+[data-theme="dark"] .mindmap-wrap{
+  background:linear-gradient(135deg,#16131f 0%,#0f0d18 100%);
+}
+.mindmap-wrap .markmap{width:100%;height:100%}
+[data-theme="dark"] .mindmap-wrap .markmap{--markmap-text-color:#ffffff;--markmap-circle-open-bg:#666;--markmap-code-bg:#2a2a2a;--markmap-code-color:#ddd}
+@media(max-width:860px){#panel-mindmap{padding:16px 18px 32px}}
 </style>'''
 
-# These are the same Markmap browser libraries used by car-cost, pinned for stability.
-LIBS = '''<script defer src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/markmap-lib@0.18.12/dist/browser/index.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.min.js"></script>'''
+# EXACT same three CDN URLs used by car-cost (not pinned to alternate
+# versions; those had caused our previous page to show the SVG fallback).
+LIBS = '''<script src="https://cdn.jsdelivr.net/npm/d3/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-lib/dist/browser/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-view/dist/browser/index.min.js"></script>'''
 
-SCRIPT = r'''<script id="yano-shared-mindmap-init">
+SCRIPT = r'''<script id="yano-car-cost-mindmap-init">
 (() => {
   'use strict';
   const panel = document.querySelector('[data-panel="mindmap"]');
-  const svg = panel?.querySelector('#markmap-svg');
+  const svgEl = panel?.querySelector('#markmap-svg');
   const data = document.getElementById('yano-mindmap-data');
-  if (!panel || !svg || !data) return;
-  const md = JSON.parse(data.textContent);
+  if (!panel || !svgEl || !data) return;
+  const MINDMAP_MD = JSON.parse(data.textContent);
+  let instance = null, fallback = null, started = false;
   const colors = ['#7c5cfc','#0ea5e9','#f59e0b','#22c55e','#ef4444','#8b5cf6'];
-  let markmap = null, markmapRoot = null, fallback = null, started = false;
-  const fitButton = panel.querySelector('[data-mindmap-fit]');
-  const expandButton = panel.querySelector('[data-mindmap-expand]');
-  function visible(){return !panel.hidden && getComputedStyle(panel).display !== 'none';}
-  function fit(){if(markmap) markmap.fit(); else fallback?.fit();}
-  function expand(){
-    if (markmap && markmapRoot) {
-      markmap.setData(markmapRoot,{initialExpandLevel:20}).then(() => markmap.fit());
-    } else if (fallback) fallback.expand();
-  }
-  fitButton?.addEventListener('click',fit);
-  expandButton?.addEventListener('click',expand);
-  function init(){
-    if (!visible()) return;
-    if (started){window.requestAnimationFrame(fit);return;}
+  function isVisible(){return !panel.hidden && getComputedStyle(panel).display !== 'none';}
+  function renderMindmap(){
+    if (!isVisible()) return;
+    if (started) { if(instance)requestAnimationFrame(()=>instance.fit()); return; }
     started = true;
     try {
       if (window.markmap?.Transformer && window.markmap?.Markmap) {
-        const {root} = new window.markmap.Transformer().transform(md);
-        markmapRoot = root;
-        markmap = window.markmap.Markmap.create(svg, {
-          autoFit:false, duration:250, maxWidth:285, paddingX:16,
-          initialExpandLevel:3, scrollForPan:true,
-          color:node=>colors[Math.max(0,(node.state?.depth||1)-1)%colors.length]
+        // This create() config is taken verbatim from car-cost/index.html.
+        const { Transformer, Markmap } = window.markmap;
+        const transformer = new Transformer();
+        const { root } = transformer.transform(MINDMAP_MD);
+        instance = Markmap.create(svgEl, {
+          autoFit: true,
+          color: (node) => {
+            const colors = ['#7c5cfc','#0ea5e9','#f59e0b','#22c55e','#ef4444','#8b5cf6'];
+            return colors[node.state?.depth % colors.length] || '#7c5cfc';
+          },
+          duration: 500,
+          maxWidth: 300,
+          paddingX: 16,
+          scrollForPan: true,
         }, root);
-        window.requestAnimationFrame(() => markmap.fit());
+        requestAnimationFrame(() => instance.fit());
         return;
       }
-    } catch (err) {console.warn('Markmap unavailable; using offline SVG fallback',err);}
-    fallback = buildOfflineMap(md,svg,colors);
+    } catch (error) { console.warn('Markmap failed, using offline SVG map', error); }
+    fallback = buildOfflineMap(MINDMAP_MD,svgEl,colors);
   }
-  // Local-file reading still has a complete interactive SVG without CDNs.
   function buildOfflineMap(source, el, palette){
     const NS='http://www.w3.org/2000/svg';
     const node=(tag,attrs,content)=>{
@@ -89,7 +92,7 @@ SCRIPT = r'''<script id="yano-shared-mindmap-init">
     const stack=[], nodes=[];
     for (const line of source.split(/\r?\n/)) {
       const m=/^(#{1,6})\s+(.+)$/.exec(line.trim());if(!m)continue;
-      const n={text:m[2],level:m[1].length,children:[],closed:m[1].length>=3};
+      const n={text:m[2],level:m[1].length,children:[],closed:false};
       while(stack.length&&stack[stack.length-1].level>=n.level)stack.pop();
       if(stack.length)stack[stack.length-1].children.push(n);
       else nodes.push(n);
@@ -161,57 +164,62 @@ SCRIPT = r'''<script id="yano-shared-mindmap-init">
       const walk=n=>{n.closed=false;n.children.forEach(walk)};walk(root);view=null;draw();
     }};
   }
-  // This is initialized only after its tab is displayed (a hidden SVG has zero size).
-  document.addEventListener('click',e=>{
-    if(e.target.closest('[data-tab="mindmap"]'))setTimeout(init,0);
+  // The original car-cost initializes at parse end, but the new reading
+  // shell defaults to the transcript tab. Initialize on first visible open
+  // so Markmap autofit measures the real width instead of a hidden SVG.
+  document.addEventListener('click', event => {
+    if (event.target.closest('[data-tab="mindmap"]')) setTimeout(renderMindmap,0);
   });
-  const watcher=new MutationObserver(()=>{if(visible())setTimeout(init,0)});
-  watcher.observe(panel,{attributes:true,attributeFilter:['hidden','class','style']});
-  window.addEventListener('load',init);
-  if(document.readyState==='complete')init();
+  new MutationObserver(() => {
+    if (isVisible()) setTimeout(renderMindmap,0);
+  }).observe(panel,{attributes:true,attributeFilter:['hidden','class','style']});
+  if (document.readyState==='complete') renderMindmap();
+  else window.addEventListener('load',renderMindmap);
 })();
 </script>'''
 
-
 def validate_outline(markdown: str, path: Path | str = '<mindmap>') -> None:
-    lines=[line.strip() for line in markdown.splitlines() if line.strip()]
-    if len(lines)<5 or not lines[0].startswith('# '):
+    lines = [line.strip() for line in markdown.splitlines() if line.strip()]
+    if len(lines) < 5 or not lines[0].startswith('# '):
         raise ValueError(f'{path}: mindmap.md must start with # root and include branches')
-    prev=0;roots=0;branches=0
+    prev = roots = branches = 0
     for line in lines:
-        found=re.fullmatch(r'(#{1,6})\s+(.+)',line)
+        found = re.fullmatch(r'(#{1,6})\s+(.+)', line)
         if not found:
             raise ValueError(f'{path}: only Markdown headings are supported: {line[:50]}')
-        depth=len(found[1]); label=found[2]
-        if depth>prev+1 or len(label)>100:
+        depth, label = len(found[1]), found[2]
+        if depth > prev + 1 or len(label) > 100:
             raise ValueError(f'{path}: invalid hierarchy or long node: {line[:50]}')
-        if depth==1:roots+=1
-        if depth==2:branches+=1
-        prev=depth
-    if roots!=1 or branches<2:
+        if depth == 1: roots += 1
+        if depth == 2: branches += 1
+        prev = depth
+    if roots != 1 or branches < 2:
         raise ValueError(f'{path}: need one root and at least two level-2 branches')
 
 
 def inject_mindmap(html_doc: str, markdown: str, path: Path | str = '<page>') -> str:
     validate_outline(markdown, path)
-    if 'id="yano-shared-mindmap-init"' in html_doc:
+    if 'id="yano-car-cost-mindmap-init"' in html_doc:
         return html_doc
-    pattern=re.compile(r'<section\b(?=[^>]*\bdata-panel=["\']mindmap["\'])[^>]*>.*?</section>',re.S|re.I)
-    matches=list(pattern.finditer(html_doc))
-    if len(matches)!=1:
+
+    # Migrate pages already built with the now-removed approximate template.
+    # Old custom toolbar/fallback and pinned CDN scripts MUST NOT survive.
+    if 'id="yano-shared-mindmap-init"' in html_doc:
+        html_doc = re.sub(r'<script\s+id="yano-shared-mindmap-init">.*?</script>\s*','',html_doc,flags=re.S)
+        html_doc = re.sub(r'<style\s+id="yano-shared-mindmap-style">.*?</style>\s*','',html_doc,flags=re.S)
+        html_doc = re.sub(r'<script\s+defer\s+src="https://cdn\.jsdelivr\.net/npm/(?:d3@7|markmap-lib@0\.18\.12|markmap-view@0\.18\.12)/[^"]+"></script>\s*','',html_doc)
+
+    pattern = re.compile(r'<section\b(?=[^>]*\bdata-panel=["\']mindmap["\'])[^>]*>.*?</section>',re.S|re.I)
+    matches = list(pattern.finditer(html_doc))
+    if len(matches) != 1:
         raise ValueError(f'{path}: expected exactly one mindmap section, found {len(matches)}')
-    original_tag=re.match(r'<section\b[^>]*>',matches[0].group(0),re.I).group(0)
-    # Preserve existing tab state, ARIA and visibility attributes.
-    payload=json.dumps(markdown,ensure_ascii=False).replace('<','\\u003c')
-    panel=(original_tag+'<div class="panel-inner yano-mindmap-inner">'
-           '<div class="yano-map-heading"><h2>思维导图</h2><div class="yano-map-actions">'
-           '<button type="button" data-mindmap-fit>适应屏幕</button>'
-           '<button type="button" data-mindmap-expand>全部展开</button></div></div>'
-           '<div class="yano-map-stage"><svg class="markmap" id="markmap-svg" role="img" aria-label="交互式树状思维导图"></svg></div>'
-           '<p class="yano-map-caption">点击节点展开或收起；拖动平移，滚轮或触控板缩放。</p>'
-           f'<script type="application/json" id="yano-mindmap-data">{payload}</script>'
-           '</div></section>')
-    html_doc=html_doc[:matches[0].start()]+panel+html_doc[matches[0].end():]
+    original_tag = re.match(r'<section\b[^>]*>',matches[0].group(0),re.I).group(0)
+    payload = json.dumps(markdown,ensure_ascii=False).replace('<','\\u003c')
+    # The visible subtree below is exactly car-cost's Mindmap markup.
+    panel = (original_tag + '<div class="mindmap-wrap"><svg class="markmap" id="markmap-svg"></svg></div>'
+             '<script type="application/json" id="yano-mindmap-data">' + payload + '</script>'
+             '</section>')
+    html_doc = html_doc[:matches[0].start()]+panel+html_doc[matches[0].end():]
     if html_doc.count('</head>')!=1 or html_doc.count('</body>')!=1:
         raise ValueError(f'{path}: HTML head/body insertion anchors missing')
     html_doc=html_doc.replace('</head>',LIBS+'\n'+STYLE+'\n</head>',1)
