@@ -21,6 +21,32 @@
   background:linear-gradient(135deg,#16131f 0%,#0f0d18 100%);
 }
 .mindmap-wrap .markmap{width:100%;height:100%}
+
+/* Full-screen controls; original car-cost canvas and Markmap settings stay unchanged. */
+#panel-mindmap .mindmap-fullscreen-btn{
+  position:absolute;right:14px;top:14px;z-index:5;
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--bg,#fff);color:var(--fg,#37352f);
+  border:1px solid var(--line,#e9e9e7);border-radius:6px;
+  padding:7px 12px;font-size:12px;font-weight:550;line-height:1.45;
+  box-shadow:0 2px 8px #0000000b;cursor:pointer;
+}
+#panel-mindmap .mindmap-fullscreen-btn:hover{background:var(--surface,#f7f7f5)}
+#panel-mindmap .mindmap-fullscreen-btn:focus-visible{outline:2px solid var(--accent,#2383e2);outline-offset:2px}
+#panel-mindmap .mindmap-wrap:fullscreen,
+#panel-mindmap .mindmap-wrap.is-fullscreen{
+  position:fixed!important;inset:0!important;width:100vw!important;
+  height:100vh!important;height:100dvh!important;max-height:none!important;
+  padding:0!important;margin:0!important;border-radius:0!important;
+  z-index:2147483640!important;
+}
+#panel-mindmap .mindmap-wrap:fullscreen .mindmap-fullscreen-btn,
+#panel-mindmap .mindmap-wrap.is-fullscreen .mindmap-fullscreen-btn{
+  right:max(18px,env(safe-area-inset-right));
+  top:max(18px,env(safe-area-inset-top));
+}
+body.mindmap-fullscreen-open{overflow:hidden!important}
+
 [data-theme="dark"] .mindmap-wrap .markmap{--markmap-text-color:#ffffff;--markmap-circle-open-bg:#666;--markmap-code-bg:#2a2a2a;--markmap-code-color:#ddd}
 @media(max-width:860px){#panel-mindmap{padding:16px 18px 32px}}
 </style>
@@ -30,7 +56,7 @@
 <header class="hero"><h1>AI 时代，我们到底要把孩子培养成什么样的人？</h1><div class="meta"><span>主讲：杨波（视频标题标注）</span><span>整理日期：2026-11-02</span><span>来源：<a href="https://www.bilibili.com/video/BV1Luxu6EEME/" target="_blank" rel="noopener">Bilibili 视频</a></span></div></header>
 <div class="tabs"><div class="tabs-scroll" role="tablist" aria-label="文章视图"><button type="button" class="tab" data-tab="summary" role="tab" aria-selected="false">摘要</button><button type="button" class="tab" data-tab="mindmap" role="tab" aria-selected="false">思维导图</button><button type="button" class="tab active" data-tab="transcript" role="tab" aria-selected="true">完整文稿</button><button type="button" class="tab" data-tab="keywords" role="tab" aria-selected="false">关键词</button><button type="button" class="tab" data-tab="highlights" role="tab" aria-selected="false">金句</button><button type="button" class="tab" data-tab="anki" role="tab" aria-selected="false">Anki</button><button type="button" class="tab" data-tab="notes" role="tab" aria-selected="false">笔记 / Shownotes</button></div></div>
 <section class="panel" id="panel-summary" data-panel="summary" role="tabpanel" hidden><div class="panel-inner"><h2 class="panel-heading">观点摘要</h2><p class="summary-lead">演讲者认为：AI 时代，孩子不能只靠标准化刷题和记忆知识建立未来竞争力。父母应在遵守现实升学规则的同时，更重视孩子作为“完整的人”的发展。</p><div class="summary-line"><strong>核心判断</strong><p>AI 已能承担大量知识获取、文本生成和规范化输出，孩子应从“和 AI 比答题”转向“带着 AI 解决问题”。</p></div><div class="summary-line"><strong>根基不变</strong><p>身心健康、品格与价值观、关系力是底层能力，不因工具进步而减弱。</p></div><div class="summary-line"><strong>中层升级</strong><p>学习力、思维力与表达力决定孩子能否持续自学、提出问题、判断答案与表达自己的观点。</p></div><div class="summary-line"><strong>顶层换新</strong><p>AI 素养、跨界整合、创造力与品味，让孩子学会使用、评估、指挥 AI，而不是直接照抄结果。</p></div><div class="summary-line"><strong>教学方式</strong><p>演讲主张更多项目制学习、个性化学习与教师的认知教练角色，而非继续单向灌输标准答案。</p></div><div class="summary-line"><strong>家长实践</strong><p>和孩子一起探索 AI；给无聊与发呆留白；保障阅读、运动和睡眠；问“你怎么想”；接触真实世界；管理自己的焦虑。</p></div><div class="summary-line"><strong>作业边界</strong><p>用 AI 帮助理解难题可以，但不让 AI 替代自主判断、理解过程以及学术与品格底线。</p></div><p class="source-caveat">说明：演讲涉及行业统计、职业预测、教学留存比例等数据和例子，均按演讲内容记录，未作独立事实核验。</p></div></section>
-<section class="panel" id="panel-mindmap" data-panel="mindmap" role="tabpanel" hidden><div class="mindmap-wrap"><svg class="markmap" id="markmap-svg"></svg></div><script type="application/json" id="yano-mindmap-data">"# AI 时代，我们要把孩子培养成什么样的人\n## 时代变化与教育焦虑\n### AI 正在重塑工作与学习\n#### 职业与专业选择不再有固定答案\n#### 传统的好学生标准需要重新审视\n### 人不应与 AI 比拼答案\n#### 从被动获取答案转向主动指挥 AI\n#### 有价值的问题、判断和想象力更重要\n## 学校与教师如何改变\n### 改变学习方式\n#### 用 AI 辅助探究，而非直接抄答案\n#### 项目实践、探索和跨学科学习\n### 教师角色发生转变\n#### 从传授知识转为设计学习\n#### 因材施教、陪伴和认知教练\n### 学生要成为学习的主动者\n#### 自己提出问题与检验结果\n#### 主动设计人生，而不是等待安排\n## 三层九项核心能力\n### 根基：身心与人格\n#### 身心健康：睡眠、运动、情绪管理\n#### 品格与价值观：诚实、责任和底线\n#### 关系与协作：同理心、沟通和连接\n### 内核：通用学习能力\n#### 学习力：终身学习与自我更新\n#### 思维力：批判性思考与独立判断\n#### 表达力：写作、沟通与清晰表达\n### 顶层：人与 AI 协作\n#### AI 素养：理解、使用和校验工具\n#### 跨界能力：连接领域与解决真实问题\n#### 审美与品味：判断什么真正值得做\n## 家庭教育与可行行动\n### 家长与孩子共同认识 AI\n#### 一起尝试工具，讨论其局限\n#### 保留独立完成和验证任务的过程\n### 给真实生活留出空间\n#### 保证睡眠、运动和人际交往\n#### 留出无聊、发呆和自主探索时间\n### 引导而非包办\n#### 理解孩子的自主性与边界\n#### 不替孩子做人生决定\n### 三个绝不与完整的人\n#### 不让 AI 代替思考\n#### 不让 AI 代替判断\n#### 不让 AI 代替品格与责任\n"</script></section>
+<section class="panel" id="panel-mindmap" data-panel="mindmap" role="tabpanel" hidden><div class="mindmap-wrap"><button type="button" class="mindmap-fullscreen-btn" data-mindmap-fullscreen aria-label="全屏查看思维导图" aria-pressed="false" title="全屏查看思维导图">全屏</button><svg class="markmap" id="markmap-svg"></svg></div><script type="application/json" id="yano-mindmap-data">"# AI 时代，我们要把孩子培养成什么样的人\n## 时代变化与教育焦虑\n### AI 正在重塑工作与学习\n#### 职业与专业选择不再有固定答案\n#### 传统的好学生标准需要重新审视\n### 人不应与 AI 比拼答案\n#### 从被动获取答案转向主动指挥 AI\n#### 有价值的问题、判断和想象力更重要\n## 学校与教师如何改变\n### 改变学习方式\n#### 用 AI 辅助探究，而非直接抄答案\n#### 项目实践、探索和跨学科学习\n### 教师角色发生转变\n#### 从传授知识转为设计学习\n#### 因材施教、陪伴和认知教练\n### 学生要成为学习的主动者\n#### 自己提出问题与检验结果\n#### 主动设计人生，而不是等待安排\n## 三层九项核心能力\n### 根基：身心与人格\n#### 身心健康：睡眠、运动、情绪管理\n#### 品格与价值观：诚实、责任和底线\n#### 关系与协作：同理心、沟通和连接\n### 内核：通用学习能力\n#### 学习力：终身学习与自我更新\n#### 思维力：批判性思考与独立判断\n#### 表达力：写作、沟通与清晰表达\n### 顶层：人与 AI 协作\n#### AI 素养：理解、使用和校验工具\n#### 跨界能力：连接领域与解决真实问题\n#### 审美与品味：判断什么真正值得做\n## 家庭教育与可行行动\n### 家长与孩子共同认识 AI\n#### 一起尝试工具，讨论其局限\n#### 保留独立完成和验证任务的过程\n### 给真实生活留出空间\n#### 保证睡眠、运动和人际交往\n#### 留出无聊、发呆和自主探索时间\n### 引导而非包办\n#### 理解孩子的自主性与边界\n#### 不替孩子做人生决定\n### 三个绝不与完整的人\n#### 不让 AI 代替思考\n#### 不让 AI 代替判断\n#### 不让 AI 代替品格与责任\n"</script></section>
 <section class="panel active" id="panel-transcript" data-panel="transcript" role="tabpanel"><div class="toolbar"><label class="search"><span aria-hidden="true">⌕</span><input id="text-search" type="search" placeholder="搜索文稿" aria-label="搜索完整文稿"></label><div class="search-actions"><span id="match-count" aria-live="polite"></span><button type="button" id="search-prev" aria-label="上一个匹配">上一个</button><button type="button" id="search-next" aria-label="下一个匹配">下一个</button><button type="button" id="search-clear">清除</button></div></div><div class="panel-inner"><details class="mobile-toc"><summary>跳转到章节</summary><nav><button type="button" data-go-section="opening">从家长的焦虑谈起</button><button type="button" data-go-section="ai-tools">AI 已经进入家庭与课堂</button><button type="button" data-go-section="direct-ai">不是等答案，而是指挥 AI 干活</button><button type="button" data-go-section="change-learning">学习方式必须改变</button><button type="button" data-go-section="teachers">教师从知识权威转向学习设计者</button><button type="button" data-go-section="agency">敢于跨界，主动设计人生</button><button type="button" data-go-section="valuable-skills">贬值的答案与升值的问题</button><button type="button" data-go-section="ai-trends">AI 的发展速度和就业冲击</button><button type="button" data-go-section="nine-abilities">三层九项核心能力</button><button type="button" data-go-section="foundation">根基：健康、品格与关系</button><button type="button" data-go-section="inner-abilities">内核：学习力、思维力与表达力</button><button type="button" data-go-section="top-abilities">顶层：AI 素养、跨界与审美</button><button type="button" data-go-section="parents-actions">家长可以实践的六件事</button><button type="button" data-go-section="faq">孩子和家长最关心的几个问题</button><button type="button" data-go-section="whole-person">三个绝不与完整的人</button></nav></details><article class="article-body"><section class="transcript-section" id="opening"><h2>从家长的焦虑谈起</h2>
 <p class="reading-paragraph" id="para-1" data-cue-start="1" data-cue-end="20">这个今天有机会呢，到附中跟各位家长做个交流哈，其实呢说实话，那个呃我小孩儿呢是在嗯22年高中毕业，我原来每次来附中呢都是错的，开家长会的，一开开六七个小时哈，那这还是第一次呢到附中做一个讲座，真的是有点这个呃怎么讲呢。还多少有点紧张。因为什么。因为作为家长的。海淀区的家长都是全国的顶尖的家长。那么跟你们做交流其实还是有些压力的。那么这个题目呢是呃初中呢跟人民大学的。我们有一个叫人工智能治理研究院做了交流。说立了四题目。然后其中的那个我们那个刘伟院长。给我安排了个题目。说杨老师讲这个题目吧。</p>
 <p class="reading-paragraph" id="para-2" data-cue-start="21" data-cue-end="45">后来我也稍微做了一点准备，那么这些东西呢只是一家之言，只是自己的一点不成熟的一些呃，想法不当之处呢？各位家长呢多指正哈，因为现在AI的发展的非常非常迅猛。那么我们专业呢。因为我在人民大学，那是信息学院，我们叫经济信息管理系。那么一级学科是管理科学工程。其实AI应用呢是我们重要的研究方向。那对我们来讲的话。不断的追其实都很难。就说别说那个最新的东西。我们就是用能把它用好。其实都不容易。而且很多东西上也都没有完全掌握呃。搞不好呢你们很多家长用的都比我好呃。但是呢有非常大的感受。有了AI之后。那么实际上对我们原来的很多职业。包括对老师。包括我们对孩子未来能力的培养。带来了非常大的冲击。</p>
@@ -213,6 +239,53 @@
   const MINDMAP_MD = JSON.parse(data.textContent);
   let instance = null, fallback = null, started = false;
   const colors = ['#7c5cfc','#0ea5e9','#f59e0b','#22c55e','#ef4444','#8b5cf6'];
+  const wrap = svgEl.closest('.mindmap-wrap');
+  const fullscreenBtn = wrap?.querySelector('[data-mindmap-fullscreen]');
+  const isFullscreen = () => document.fullscreenElement === wrap || wrap.classList.contains('is-fullscreen');
+  function fitAfterResize(){
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (!isVisible()) return;
+      if(instance) instance.fit();
+      else fallback?.fit();
+    }));
+  }
+  function syncFullscreen(){
+    const active=isFullscreen();
+    if(fullscreenBtn){
+      fullscreenBtn.textContent=active?'退出全屏':'全屏';
+      fullscreenBtn.setAttribute('aria-label',active?'退出思维导图全屏':'全屏查看思维导图');
+      fullscreenBtn.setAttribute('title',active?'退出全屏':'全屏查看思维导图');
+      fullscreenBtn.setAttribute('aria-pressed',String(active));
+    }
+    document.body.classList.toggle('mindmap-fullscreen-open',wrap.classList.contains('is-fullscreen'));
+    fitAfterResize();
+  }
+  async function toggleFullscreen(){
+    if(isFullscreen()){
+      if(document.fullscreenElement===wrap && document.exitFullscreen){
+        try{await document.exitFullscreen()}catch(e){console.warn('退出原生全屏失败',e)}
+      }
+      wrap.classList.remove('is-fullscreen');
+    }else{
+      let entered=false;
+      if(typeof wrap.requestFullscreen==='function'){
+        try{await wrap.requestFullscreen();entered=true}catch(e){/* iOS or restricted browsing context: use CSS overlay. */}
+      }
+      if(!entered)wrap.classList.add('is-fullscreen');
+    }
+    syncFullscreen();
+  }
+  fullscreenBtn?.addEventListener('click', event => {
+    event.preventDefault();event.stopPropagation();
+    void toggleFullscreen();
+  });
+  document.addEventListener('fullscreenchange',syncFullscreen);
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape' && wrap.classList.contains('is-fullscreen')){
+      wrap.classList.remove('is-fullscreen');syncFullscreen();
+    }
+  });
+  window.addEventListener('resize',()=>{if(isFullscreen())fitAfterResize()});
   function isVisible(){return !panel.hidden && getComputedStyle(panel).display !== 'none';}
   function renderMindmap(){
     if (!isVisible()) return;

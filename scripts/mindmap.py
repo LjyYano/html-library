@@ -33,6 +33,32 @@ STYLE = r'''<style id="yano-car-cost-mindmap-style">
   background:linear-gradient(135deg,#16131f 0%,#0f0d18 100%);
 }
 .mindmap-wrap .markmap{width:100%;height:100%}
+
+/* Full-screen controls; original car-cost canvas and Markmap settings stay unchanged. */
+#panel-mindmap .mindmap-fullscreen-btn{
+  position:absolute;right:14px;top:14px;z-index:5;
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--bg,#fff);color:var(--fg,#37352f);
+  border:1px solid var(--line,#e9e9e7);border-radius:6px;
+  padding:7px 12px;font-size:12px;font-weight:550;line-height:1.45;
+  box-shadow:0 2px 8px #0000000b;cursor:pointer;
+}
+#panel-mindmap .mindmap-fullscreen-btn:hover{background:var(--surface,#f7f7f5)}
+#panel-mindmap .mindmap-fullscreen-btn:focus-visible{outline:2px solid var(--accent,#2383e2);outline-offset:2px}
+#panel-mindmap .mindmap-wrap:fullscreen,
+#panel-mindmap .mindmap-wrap.is-fullscreen{
+  position:fixed!important;inset:0!important;width:100vw!important;
+  height:100vh!important;height:100dvh!important;max-height:none!important;
+  padding:0!important;margin:0!important;border-radius:0!important;
+  z-index:2147483640!important;
+}
+#panel-mindmap .mindmap-wrap:fullscreen .mindmap-fullscreen-btn,
+#panel-mindmap .mindmap-wrap.is-fullscreen .mindmap-fullscreen-btn{
+  right:max(18px,env(safe-area-inset-right));
+  top:max(18px,env(safe-area-inset-top));
+}
+body.mindmap-fullscreen-open{overflow:hidden!important}
+
 [data-theme="dark"] .mindmap-wrap .markmap{--markmap-text-color:#ffffff;--markmap-circle-open-bg:#666;--markmap-code-bg:#2a2a2a;--markmap-code-color:#ddd}
 @media(max-width:860px){#panel-mindmap{padding:16px 18px 32px}}
 </style>'''
@@ -53,6 +79,53 @@ SCRIPT = r'''<script id="yano-car-cost-mindmap-init">
   const MINDMAP_MD = JSON.parse(data.textContent);
   let instance = null, fallback = null, started = false;
   const colors = ['#7c5cfc','#0ea5e9','#f59e0b','#22c55e','#ef4444','#8b5cf6'];
+  const wrap = svgEl.closest('.mindmap-wrap');
+  const fullscreenBtn = wrap?.querySelector('[data-mindmap-fullscreen]');
+  const isFullscreen = () => document.fullscreenElement === wrap || wrap.classList.contains('is-fullscreen');
+  function fitAfterResize(){
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (!isVisible()) return;
+      if(instance) instance.fit();
+      else fallback?.fit();
+    }));
+  }
+  function syncFullscreen(){
+    const active=isFullscreen();
+    if(fullscreenBtn){
+      fullscreenBtn.textContent=active?'退出全屏':'全屏';
+      fullscreenBtn.setAttribute('aria-label',active?'退出思维导图全屏':'全屏查看思维导图');
+      fullscreenBtn.setAttribute('title',active?'退出全屏':'全屏查看思维导图');
+      fullscreenBtn.setAttribute('aria-pressed',String(active));
+    }
+    document.body.classList.toggle('mindmap-fullscreen-open',wrap.classList.contains('is-fullscreen'));
+    fitAfterResize();
+  }
+  async function toggleFullscreen(){
+    if(isFullscreen()){
+      if(document.fullscreenElement===wrap && document.exitFullscreen){
+        try{await document.exitFullscreen()}catch(e){console.warn('退出原生全屏失败',e)}
+      }
+      wrap.classList.remove('is-fullscreen');
+    }else{
+      let entered=false;
+      if(typeof wrap.requestFullscreen==='function'){
+        try{await wrap.requestFullscreen();entered=true}catch(e){/* iOS or restricted browsing context: use CSS overlay. */}
+      }
+      if(!entered)wrap.classList.add('is-fullscreen');
+    }
+    syncFullscreen();
+  }
+  fullscreenBtn?.addEventListener('click', event => {
+    event.preventDefault();event.stopPropagation();
+    void toggleFullscreen();
+  });
+  document.addEventListener('fullscreenchange',syncFullscreen);
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape' && wrap.classList.contains('is-fullscreen')){
+      wrap.classList.remove('is-fullscreen');syncFullscreen();
+    }
+  });
+  window.addEventListener('resize',()=>{if(isFullscreen())fitAfterResize()});
   function isVisible(){return !panel.hidden && getComputedStyle(panel).display !== 'none';}
   function renderMindmap(){
     if (!isVisible()) return;
@@ -216,7 +289,7 @@ def inject_mindmap(html_doc: str, markdown: str, path: Path | str = '<page>') ->
     original_tag = re.match(r'<section\b[^>]*>',matches[0].group(0),re.I).group(0)
     payload = json.dumps(markdown,ensure_ascii=False).replace('<','\\u003c')
     # The visible subtree below is exactly car-cost's Mindmap markup.
-    panel = (original_tag + '<div class="mindmap-wrap"><svg class="markmap" id="markmap-svg"></svg></div>'
+    panel = (original_tag + '<div class="mindmap-wrap"><button type="button" class="mindmap-fullscreen-btn" data-mindmap-fullscreen aria-label="全屏查看思维导图" aria-pressed="false" title="全屏查看思维导图">全屏</button><svg class="markmap" id="markmap-svg"></svg></div>'
              '<script type="application/json" id="yano-mindmap-data">' + payload + '</script>'
              '</section>')
     html_doc = html_doc[:matches[0].start()]+panel+html_doc[matches[0].end():]
